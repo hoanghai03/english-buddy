@@ -1,0 +1,126 @@
+<div class="messenger">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <button class="home-btn" (click)="goHome()">✨ English Buddy</button>
+      <h2 class="sidebar-title">Messages</h2>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Tìm kiếm..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
+    </div>
+
+    <div class="contact-list">
+      @for (char of filteredChars(); track char.id) {
+        <div
+          class="contact-item"
+          [ngClass]="{ active: active()?.id === char.id }"
+          (click)="select(char)"
+        >
+          <div class="contact-avatar-wrap">
+            <img [src]="char.avatar" [alt]="char.name" class="contact-avatar" />
+            <span class="contact-online"></span>
+          </div>
+          <div class="contact-info">
+            <div class="contact-top">
+              <span class="contact-name">{{ char.name }}</span>
+              <span class="contact-flag">{{ char.flag }}</span>
+            </div>
+            <div class="contact-preview">{{ lastMsg(char.id) }}</div>
+          </div>
+          <span class="level-dot" [ngClass]="char.level.toLowerCase()"></span>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- RIGHT: CHAT PANEL -->
+  <main class="chat-panel">
+    @if (active()) {
+      <!-- Chat header -->
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="header-avatar-wrap">
+            <img [src]="active()!.avatar" [alt]="active()!.name" class="header-avatar" />
+            <span class="header-online"></span>
+          </div>
+          <div class="header-info">
+            <div class="header-name">{{ active()!.name }}</div>
+            <div class="header-sub">{{ active()!.job }} · {{ active()!.flag }} {{ active()!.location }}</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="accent-chip">{{ active()!.accent }}</span>
+          <span class="level-chip" [ngClass]="active()!.level.toLowerCase()">{{ active()!.level }}</span>
+          <button class="call-btn" (click)="startCall()" title="Gọi điện">📞</button>
+        </div>
+      </div>
+
+      <!-- Topic suggestions -->
+      <div class="topic-bar">
+        <span class="topic-label">Chủ đề:</span>
+        @for (t of active()!.topics; track t) {
+          <span class="topic-chip">{{ t }}</span>
+        }
+      </div>
+
+      <!-- Messages -->
+      <div class="message-list" #messageList>
+        @for (msg of messages(); track msg.id) {
+          <div class="msg-row" [ngClass]="msg.sender">
+            @if (msg.sender === 'ai') {
+              <img [src]="active()!.avatar" class="msg-avatar" />
+            }
+            <div class="bubble-col">
+              <div class="bubble">{{ msg.text }}</div>
+              <div class="msg-time">{{ formatTime(msg.timestamp) }}</div>
+            </div>
+          </div>
+        }
+
+        @if (isTyping()) {
+          <div class="msg-row ai">
+            <img [src]="active()!.avatar" class="msg-avatar" />
+            <div class="bubble-col">
+              <div class="bubble typing">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <button class="emoji-btn">😊</button>
+        <textarea
+          class="msg-input"
+          [(ngModel)]="inputText"
+          (keydown)="onEnter($event)"
+          placeholder="Nhập tiếng Anh tại đây... (Enter để gửi)"
+          rows="1"
+        ></textarea>
+        <button class="send-btn" (click)="send()" [disabled]="!inputText.trim()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+
+    } @else {
+      <!-- Empty state -->
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <h3>Chọn một người để bắt đầu</h3>
+        <p>Chọn một nhân vật AI bên trái để bắt đầu luyện tiếng Anh ngay!</p>
+      </div>
+    }
+  </main>
+</div>

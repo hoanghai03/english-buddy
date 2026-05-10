@@ -1,0 +1,89 @@
+<div class="landing">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">✨ English Buddy</div>
+    <button class="nav-cta" (click)="start()">Bắt đầu miễn phí →</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">🎓 Dành cho sinh viên</div>
+      <h1 class="hero-title">
+        Luyện tiếng Anh<br>
+        <span class="gradient-text">mỗi ngày, mọi lúc</span>
+      </h1>
+      <p class="hero-sub">
+        Trò chuyện với người bản ngữ AI — chat hoặc gọi điện.<br>
+        Không xấu hổ, không áp lực. Tiến bộ thật sự.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" (click)="start()">🚀 Bắt đầu ngay</button>
+        <span class="hero-note">Miễn phí · Không cần đăng ký</span>
+      </div>
+    </div>
+
+    <!-- Floating character cards -->
+    <div class="hero-cards">
+      @for (char of previews; track char.id) {
+        <div class="float-card" (click)="start()">
+          <img [src]="char.avatar" [alt]="char.name" />
+          <div class="float-card-info">
+            <div class="float-name">{{ char.name }}</div>
+            <div class="float-job">{{ char.flag }} {{ char.location }}</div>
+          </div>
+          <span class="online-dot"></span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    @for (s of stats; track s.label) {
+      <div class="stat-item">
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    }
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <h2 class="section-title">Tại sao sinh viên thích English Buddy?</h2>
+    <div class="feature-grid">
+      @for (f of features; track f.title) {
+        <div class="feature-card" (click)="goTo(f.route)">
+          <div class="feature-icon">{{ f.icon }}</div>
+          <div class="feature-title">{{ f.title }}</div>
+          <div class="feature-desc">{{ f.desc }}</div>
+          <div class="feature-arrow">→</div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- VIDEO CTA BANNER -->
+  <section class="video-banner">
+    <div class="video-banner-inner">
+      <div class="video-banner-text">
+        <div class="video-banner-tag">✨ Tính năng mới</div>
+        <h2>Luyện nghe với video YouTube</h2>
+        <p>Click vào dòng transcript để nhảy đến đúng đoạn đó. Chế độ chép chính tả giúp bạn luyện nghe từng câu một.</p>
+      </div>
+      <button class="btn-video" (click)="goVideo()">🎬 Thử ngay</button>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-section">
+    <h2>Sẵn sàng nói tiếng Anh tự tin hơn?</h2>
+    <p>Chọn một người bạn AI và bắt đầu cuộc trò chuyện đầu tiên ngay hôm nay.</p>
+    <button class="btn-primary large" (click)="start()">💬 Mở Messages</button>
+  </section>
+
+  <footer class="footer">
+    <span>✨ English Buddy · Made for students</span>
+  </footer>
+</div>

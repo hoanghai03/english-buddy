@@ -1,0 +1,63 @@
+@if (character()) {
+<div class="call-page" [ngClass]="status()">
+  <!-- Background blur overlay -->
+  <div class="bg-overlay">
+    <img [src]="character()!.avatar" class="bg-avatar" aria-hidden="true" />
+  </div>
+
+  <div class="call-card">
+    <!-- Top info -->
+    <div class="call-status-text">
+      @if (status() === 'connecting') { <span>Đang kết nối...</span> }
+      @if (status() === 'active')     { <span class="active-dot">● Đang gọi</span> }
+      @if (status() === 'ended')      { <span>Cuộc gọi đã kết thúc</span> }
+    </div>
+
+    <!-- Avatar -->
+    <div class="avatar-ring" [ngClass]="{ pulse: status() === 'active' }">
+      <img [src]="character()!.avatar" [alt]="character()!.name" class="call-avatar" />
+    </div>
+
+    <!-- Name & info -->
+    <div class="call-name">{{ character()!.name }}</div>
+    <div class="call-job">{{ character()!.job }} · {{ character()!.flag }} {{ character()!.location }}</div>
+
+    <!-- Timer -->
+    @if (status() === 'active') {
+      <div class="timer">{{ duration }}</div>
+    }
+
+    <!-- Sound bars -->
+    @if (status() === 'active' && !muted()) {
+      <div class="sound-bars">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="bar"></div>
+        }
+      </div>
+    }
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn" [ngClass]="{ off: muted() }" (click)="toggleMute()" title="Tắt/bật mic">
+        {{ muted() ? '🎙️🚫' : '🎙️' }}
+        <span>{{ muted() ? 'Bỏ tắt' : 'Tắt mic' }}</span>
+      </button>
+
+      <button class="end-btn" (click)="endCall()" title="Kết thúc cuộc gọi">
+        📵
+        <span>Kết thúc</span>
+      </button>
+
+      <button class="ctrl-btn" [ngClass]="{ off: !speakerOn() }" (click)="toggleSpeaker()" title="Loa">
+        {{ speakerOn() ? '🔊' : '🔇' }}
+        <span>{{ speakerOn() ? 'Loa bật' : 'Loa tắt' }}</span>
+      </button>
+    </div>
+
+    <!-- Switch to chat -->
+    @if (status() === 'active') {
+      <button class="switch-chat-btn" (click)="goToChat()">💬 Chuyển sang Chat</button>
+    }
+  </div>
+</div>
+}

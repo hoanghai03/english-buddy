@@ -1,0 +1,209 @@
+.call-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Blurred background avatar */
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.bg-avatar {
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  opacity: 0.08;
+  filter: blur(40px);
+  transform: scale(1.5);
+}
+
+/* Main card */
+.call-card {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 56px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 32px;
+  min-width: 340px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.call-status-text {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.04em;
+}
+
+.active-dot { color: #34d399; }
+
+/* Avatar ring */
+.avatar-ring {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.2);
+  padding: 4px;
+  transition: box-shadow 0.5s;
+}
+
+.avatar-ring.pulse {
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.5); }
+  50%       { box-shadow: 0 0 0 14px rgba(79, 70, 229, 0); }
+}
+
+.call-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f3f4f6;
+}
+
+.call-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 4px;
+}
+
+.call-job {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.55);
+}
+
+.timer {
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sound bars */
+.sound-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+}
+
+.bar {
+  width: 4px;
+  border-radius: 2px;
+  background: #34d399;
+  animation: sound-wave 1s ease-in-out infinite;
+}
+
+.bar:nth-child(1) { height: 40%; animation-delay: 0s; }
+.bar:nth-child(2) { height: 70%; animation-delay: 0.15s; }
+.bar:nth-child(3) { height: 100%; animation-delay: 0.3s; }
+.bar:nth-child(4) { height: 70%; animation-delay: 0.45s; }
+.bar:nth-child(5) { height: 40%; animation-delay: 0.6s; }
+
+@keyframes sound-wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1); }
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.ctrl-btn,
+.end-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.ctrl-btn {
+  background: rgba(255,255,255,0.12);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  color: #fff;
+  padding: 0;
+}
+
+.ctrl-btn span {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.6);
+  position: relative;
+  top: 38px;
+  white-space: nowrap;
+}
+
+.ctrl-btn.off {
+  background: rgba(255,255,255,0.06);
+  opacity: 0.5;
+}
+
+.ctrl-btn:hover { transform: scale(1.08); }
+
+.end-btn {
+  background: #ef4444;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+}
+
+.end-btn span {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.7);
+  position: relative;
+  top: 38px;
+}
+
+.end-btn:hover { transform: scale(1.08); background: #dc2626; }
+
+.switch-chat-btn {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.switch-chat-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+.call-page.ended .call-card {
+  opacity: 0.6;
+}

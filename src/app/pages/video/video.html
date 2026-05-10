@@ -1,0 +1,237 @@
+<div class="video-page">
+
+  <!-- HEADER -->
+  <header class="vheader">
+    <button class="back-btn" (click)="goBack()">← Trang chủ</button>
+    <div class="vheader-center">
+      <div class="vheader-logo">✨ English Buddy</div>
+      <div class="mode-toggle">
+        <button [ngClass]="{ active: mode() === 'listen' }" (click)="setMode('listen')">🎧 Luyện nghe</button>
+        <button [ngClass]="{ active: mode() === 'dictation' }" (click)="setMode('dictation')">✏️ Chép chính tả</button>
+      </div>
+    </div>
+    @if (activeLesson()) {
+      <button class="change-btn" (click)="activeLesson.set(null)">Đổi bài ↕</button>
+    } @else {
+      <div></div>
+    }
+  </header>
+
+  <!-- LESSON SELECTION -->
+  @if (!activeLesson()) {
+    <section class="lesson-section">
+      <div class="lesson-section-header">
+        <div>
+          <h2 class="lesson-heading">Chọn bài học</h2>
+          <p class="lesson-sub">Transcript được tải tự động từ YouTube — chính xác từng giây.</p>
+        </div>
+        <button class="import-toggle-btn" (click)="showImport.update(v => !v)">
+          {{ showImport() ? '× Đóng' : '+ Thêm video' }}
+        </button>
+      </div>
+
+      @if (showImport()) {
+        <div class="import-box">
+          <input
+            type="text"
+            class="import-input"
+            [(ngModel)]="importUrl"
+            placeholder="Dán link YouTube: https://youtube.com/watch?v=... hoặc video ID"
+            (keydown.enter)="importVideo()"
+          />
+          @if (importError()) {
+            <div class="import-error">⚠️ {{ importError() }}</div>
+          }
+          <button class="import-btn" (click)="importVideo()" [disabled]="importing() || !importUrl.trim()">
+            @if (importing()) { ⏳ Đang tải transcript... }
+            @else { 📥 Nhập video }
+          </button>
+        </div>
+      }
+
+      <div class="lesson-grid">
+        @for (l of lessons(); track l.id) {
+          <div class="lesson-card" (click)="selectLesson(l)">
+            <div class="lesson-thumb">
+              <img
+                [src]="'https://img.youtube.com/vi/' + l.videoId + '/mqdefault.jpg'"
+                [alt]="l.title"
+              />
+              <span class="play-icon">▶</span>
+            </div>
+            <div class="lesson-body">
+              <div class="lesson-title">{{ l.title }}</div>
+              <div class="lesson-desc">{{ l.description }}</div>
+              <div class="lesson-meta">
+                <span class="badge" [ngClass]="l.level.toLowerCase()">{{ l.level }}</span>
+                <span class="lesson-topic">{{ l.topic }}</span>
+                <span class="lesson-count">📄 Auto</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- LESSON LAYOUT -->
+  @if (activeLesson(); as lesson) {
+    <div class="lesson-layout">
+
+      <!-- LEFT: VIDEO -->
+      <div class="video-col">
+        <div class="player-wrap">
+          <div id="yt-player"></div>
+        </div>
+        <div class="lesson-meta-bar">
+          <span class="badge" [ngClass]="lesson.level.toLowerCase()">{{ lesson.level }}</span>
+          <span class="lesson-title-small">{{ lesson.title }}</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-col">
+
+        <!-- LISTEN MODE -->
+        @if (mode() === 'listen') {
+          <div class="panel listen-panel">
+            <div class="panel-header">
+              <span class="panel-title">📜 Transcript</span>
+              <div class="lang-toggle">
+                <button [ngClass]="{ active: lang() === 'en' }" (click)="setLang('en')">🇬🇧 EN</button>
+                <button [ngClass]="{ active: lang() === 'vi' }" (click)="setLang('vi')">🇻🇳 VI</button>
+              </div>
+            </div>
+
+            @if (transcriptLoading()) {
+              <div class="transcript-state">
+                <div class="ts-spinner"></div>
+                <p>Đang tải transcript từ YouTube...</p>
+              </div>
+            } @else if (transcriptError()) {
+              <div class="transcript-state error">
+                <p>⚠️ {{ transcriptError() }}</p>
+                <button class="ts-retry-btn" (click)="selectLesson(lesson)">🔄 Thử lại</button>
+              </div>
+            } @else {
+              <div class="transcript-list">
+                @for (line of currentTranscript(); let i = $index; track line.start) {
+                  <div
+                    class="tline"
+                    [ngClass]="{ active: activeLineIndex() === i }"
+                    (click)="seekTo(line)"
+                  >
+                    <span class="ttime">{{ formatTime(line.start) }}</span>
+                    <span class="ttext">{{ lang() === 'en' ? line.en : (line.vi || line.en) }}</span>
+                    <span class="tplay">▶</span>
+                  </div>
+                }
+              </div>
+              <div class="listen-tip">💡 Click vào dòng để nhảy tới đoạn đó trong video</div>
+            }
+          </div>
+        }
+
+        <!-- DICTATION MODE -->
+        @if (mode() === 'dictation') {
+          <div class="panel dictation-panel">
+
+            @if (transcriptLoading()) {
+              <div class="transcript-state">
+                <div class="ts-spinner"></div>
+                <p>Đang tải transcript từ YouTube...</p>
+              </div>
+            } @else if (transcriptError()) {
+              <div class="transcript-state error">
+                <p>⚠️ {{ transcriptError() }}</p>
+                <button class="ts-retry-btn" (click)="selectLesson(lesson)">🔄 Thử lại</button>
+              </div>
+            } @else {
+              <!-- Progress -->
+              <div class="dict-progress-row">
+                <div class="dict-progress-bar">
+                  <div
+                    class="dict-progress-fill"
+                    [style.width.%]="((dictIndex() + 1) / (currentTranscript().length || 1)) * 100"
+                  ></div>
+                </div>
+                <span class="dict-progress-label">
+                  Câu {{ dictIndex() + 1 }} / {{ currentTranscript().length }}
+                </span>
+              </div>
+
+              <!-- Hint: Vietnamese -->
+              <div class="dict-hint">
+                🇻🇳 {{ currentLine?.vi || '(Không có bản dịch tiếng Việt)' }}
+              </div>
+
+              <!-- Play sentence button -->
+              <button class="play-sentence-btn" (click)="playSentence()">
+                🔊 Nghe câu này
+              </button>
+
+              <!-- Result display -->
+              @if (revealed()) {
+                <div class="revealed-box">
+                  <div class="revealed-label">✅ Đáp án:</div>
+                  <div class="revealed-text">{{ currentLine?.en }}</div>
+                </div>
+              } @else if (checked()) {
+                <div class="result-box">
+                  <div class="result-score" [ngClass]="score() >= 80 ? 'good' : score() >= 50 ? 'ok' : 'bad'">
+                    {{ score() }}% đúng
+                  </div>
+                  <div class="word-result-list">
+                    @for (r of wordResults(); track $index) {
+                      <span class="wchip" [ngClass]="r.correct ? 'correct' : 'wrong'">
+                        {{ r.word }}
+                        @if (!r.correct && r.typed) {
+                          <span class="wtyped">(bạn: {{ r.typed }})</span>
+                        }
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Input -->
+              <div class="dict-input-wrap">
+                <textarea
+                  class="dict-input"
+                  [(ngModel)]="inputText"
+                  (keydown)="onEnter($event)"
+                  [disabled]="checked()"
+                  placeholder="Gõ những gì bạn nghe được... (Enter để kiểm tra)"
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <!-- Actions -->
+              <div class="dict-actions">
+                <button class="dict-btn nav" (click)="prev()" [disabled]="dictIndex() === 0">◀ Trước</button>
+                @if (!checked()) {
+                  <button class="dict-btn check" (click)="checkAnswer()" [disabled]="!inputText.trim()">
+                    ✓ Kiểm tra
+                  </button>
+                } @else if (!revealed()) {
+                  <button class="dict-btn reveal" (click)="reveal()">👁 Hiện đáp án</button>
+                  <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">
+                    Tiếp ▶
+                  </button>
+                } @else {
+                  <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">
+                    Tiếp ▶
+                  </button>
+                }
+                @if (!checked()) {
+                  <button class="dict-btn nav" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">Bỏ qua ▶</button>
+                }
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+</div>

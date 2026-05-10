@@ -1,0 +1,7 @@
+{
+  "/api/timedtext": {
+    "target": "https://www.youtube.com",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
