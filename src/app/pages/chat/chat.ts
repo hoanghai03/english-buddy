@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { CharacterService } from '../../services/character.service';
+import { LanguageService } from '../../services/language.service';
 import { Character } from '../../models/character.model';
 
 @Component({
@@ -16,6 +17,7 @@ export class ChatComponent implements AfterViewChecked {
 
   private characterService = inject(CharacterService);
   private router = inject(Router);
+  lang = inject(LanguageService);
 
   characters = this.characterService.characters;
   active = computed(() => this.characterService.selectedCharacter());
@@ -80,7 +82,7 @@ export class ChatComponent implements AfterViewChecked {
   }
 
   lastMsg(charId: number): string {
-    return this.characterService.lastMessage(charId);
+    return this.characterService.lastMessage(charId, this.lang.t('chat_start_convo'));
   }
 
   private scrollToBottom() {

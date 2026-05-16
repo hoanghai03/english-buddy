@@ -1,31 +1,35 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
+import { LanguageService } from '../../services/language.service';
+import { AuthService } from '../../services/auth.service';
 import { AdBannerComponent } from '../../shared/ad-banner';
 
 @Component({
   selector: 'app-home',
-  imports: [AdBannerComponent],
+  imports: [AdBannerComponent, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class HomeComponent {
   private characterService = inject(CharacterService);
   private router = inject(Router);
+  lang = inject(LanguageService);
+  auth = inject(AuthService);
 
-  stats = [
-    { value: '8+', label: 'Nhân vật AI' },
-    { value: '3', label: 'Cấp độ' },
-    { value: '100%', label: 'Miễn phí' },
-    { value: '∞', label: 'Cuộc trò chuyện' },
-  ];
+  stats = computed(() => [
+    { value: '8+', label: this.lang.t('stat_chars') },
+    { value: '3', label: this.lang.t('stat_levels') },
+    { value: '100%', label: this.lang.t('stat_free') },
+    { value: '∞', label: this.lang.t('stat_convos') },
+  ]);
 
-  features = [
-    { icon: '💬', title: 'Chat tự nhiên', desc: 'Nhắn tin với AI như chat với bạn bè thật sự', route: '/messages' },
-    { icon: '📞', title: 'Gọi điện AI', desc: 'Luyện kỹ năng nghe nói với giọng nói bản ngữ', route: '/messages' },
-    { icon: '🎙️', title: 'Luyện nghe chép', desc: 'Nghe câu tiếng Anh rồi chép lại — luyện tai nghe không cần video', route: '/audio' },
-    { icon: '🎯', title: 'Đúng cấp độ', desc: 'Beginner, Intermediate, Advanced — chọn theo trình', route: '/messages' },
-  ];
+  features = computed(() => [
+    { icon: '💬', title: this.lang.t('feat1_title'), desc: this.lang.t('feat1_desc'), route: '/messages' },
+    { icon: '📞', title: this.lang.t('feat2_title'), desc: this.lang.t('feat2_desc'), route: '/messages' },
+    { icon: '🎙️', title: this.lang.t('feat3_title'), desc: this.lang.t('feat3_desc'), route: '/audio' },
+    { icon: '🎯', title: this.lang.t('feat4_title'), desc: this.lang.t('feat4_desc'), route: '/messages' },
+  ]);
 
   previews = this.characterService.characters.slice(0, 4);
 

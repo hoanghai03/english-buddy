@@ -3,9 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { TranscriptLine } from '../models/lesson.model';
+import { environment } from '../../environments/environment';
 
-// server.js proxy chạy trên port 3001, tránh CORS khi fetch YouTube
-const PROXY = 'http://localhost:3001';
+const PROXY = environment.proxyUrl;
 
 @Injectable({ providedIn: 'root' })
 export class TranscriptService {

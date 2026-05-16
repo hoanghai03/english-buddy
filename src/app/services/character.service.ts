@@ -74,9 +74,9 @@ export class CharacterService {
     return this.characters[Math.floor(Math.random() * this.characters.length)];
   }
 
-  lastMessage(charId: number): string {
+  lastMessage(charId: number, fallback = 'Bắt đầu trò chuyện...'): string {
     const msgs = this.messageMap().get(charId) ?? [];
-    if (!msgs.length) return 'Bắt đầu trò chuyện...';
+    if (!msgs.length) return fallback;
     const last = msgs[msgs.length - 1];
     return last.text.length > 40 ? last.text.slice(0, 40) + '…' : last.text;
   }

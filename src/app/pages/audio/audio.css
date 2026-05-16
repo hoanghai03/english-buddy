@@ -1,3 +1,21 @@
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 48px 24px;
+  font-size: 1rem;
+  color: #6b7280;
+  border-radius: 16px;
+  background: #f9fafb;
+  margin-top: 16px;
+}
+
+.error-state { color: #ef4444; background: #fef2f2; }
+
+.lesson-card.card-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .confetti-piece {
   position: fixed;
   top: -14px;

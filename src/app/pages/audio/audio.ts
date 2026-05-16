@@ -46,12 +46,21 @@ export class AudioComponent implements OnDestroy {
   private audioLessonService = inject(AudioLessonService);
   private router = inject(Router);
 
-  private readonly lessons = this.audioLessonService.lessons;
+  constructor() {
+    this.audioLessonService.loadLessons();
+  }
+
   readonly levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
   filterLevel = signal<string>('all');
+  loadingLesson = signal(false);
+
+  readonly loading = this.audioLessonService.loading;
+  readonly loadError = this.audioLessonService.error;
+
   filteredLessons = computed(() => {
     const lv = this.filterLevel();
-    return lv === 'all' ? this.lessons() : this.lessons().filter(l => l.level === lv);
+    const all = this.audioLessonService.lessons();
+    return lv === 'all' ? all : all.filter(l => l.level === lv);
   });
 
   activeLesson = signal<AudioLesson | null>(null);
@@ -137,8 +146,12 @@ export class AudioComponent implements OnDestroy {
     return this.activeLesson()?.lines[this.dictIndex()] ?? null;
   }
 
-  selectLesson(lesson: AudioLesson) {
-    this.activeLesson.set(lesson);
+  async selectLesson(lesson: AudioLesson) {
+    this.loadingLesson.set(true);
+    const full = await this.audioLessonService.loadLessonDetail(lesson.id);
+    this.loadingLesson.set(false);
+    if (!full) return;
+    this.activeLesson.set(full);
     this.dictIndex.set(0);
     this.resetDictation();
   }

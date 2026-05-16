@@ -4,13 +4,13 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <button class="home-btn" (click)="goHome()">✨ English Buddy</button>
-      <h2 class="sidebar-title">Messages</h2>
+      <h2 class="sidebar-title">{{ lang.t('chat_sidebar_title') }}</h2>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
         <input
           class="search-input"
           type="text"
-          placeholder="Tìm kiếm..."
+          [placeholder]="lang.t('chat_search')"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
         />
@@ -59,13 +59,13 @@
         <div class="header-actions">
           <span class="accent-chip">{{ active()!.accent }}</span>
           <span class="level-chip" [ngClass]="active()!.level.toLowerCase()">{{ active()!.level }}</span>
-          <button class="call-btn" (click)="startCall()" title="Gọi điện">📞</button>
+          <button class="call-btn" (click)="startCall()" [title]="lang.t('chat_call_title')">📞</button>
         </div>
       </div>
 
       <!-- Topic suggestions -->
       <div class="topic-bar">
-        <span class="topic-label">Chủ đề:</span>
+        <span class="topic-label">{{ lang.t('chat_topic_label') }}</span>
         @for (t of active()!.topics; track t) {
           <span class="topic-chip">{{ t }}</span>
         }
@@ -104,7 +104,7 @@
           class="msg-input"
           [(ngModel)]="inputText"
           (keydown)="onEnter($event)"
-          placeholder="Nhập tiếng Anh tại đây... (Enter để gửi)"
+          [placeholder]="lang.t('chat_input_placeholder')"
           rows="1"
         ></textarea>
         <button class="send-btn" (click)="send()" [disabled]="!inputText.trim()">
@@ -118,8 +118,8 @@
       <!-- Empty state -->
       <div class="empty-state">
         <div class="empty-icon">💬</div>
-        <h3>Chọn một người để bắt đầu</h3>
-        <p>Chọn một nhân vật AI bên trái để bắt đầu luyện tiếng Anh ngay!</p>
+        <h3>{{ lang.t('chat_empty_h3') }}</h3>
+        <p>{{ lang.t('chat_empty_p') }}</p>
       </div>
     }
   </main>

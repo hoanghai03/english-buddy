@@ -40,22 +40,28 @@
         }
       </div>
 
-      <div class="lesson-grid">
-        @for (l of filteredLessons(); track l.id) {
-          <div class="lesson-card" (click)="selectLesson(l)">
-            <div class="lesson-icon">🎙️</div>
-            <div class="lesson-body">
-              <div class="lesson-title">{{ l.title }}</div>
-              <div class="lesson-desc">{{ l.description }}</div>
-              <div class="lesson-meta">
-                <span class="badge" [ngClass]="l.level.toLowerCase()">{{ l.level }}</span>
-                <span class="lesson-topic">{{ l.topic }}</span>
-                <span class="lesson-count">🎵 {{ l.lines.length }} câu</span>
+      @if (loading()) {
+        <div class="loading-state">⏳ Đang tải bài học...</div>
+      } @else if (loadError()) {
+        <div class="error-state">❌ {{ loadError() }}</div>
+      } @else {
+        <div class="lesson-grid">
+          @for (l of filteredLessons(); track l.id) {
+            <div class="lesson-card" [class.card-loading]="loadingLesson()" (click)="selectLesson(l)">
+              <div class="lesson-icon">🎙️</div>
+              <div class="lesson-body">
+                <div class="lesson-title">{{ l.title }}</div>
+                <div class="lesson-desc">{{ l.description }}</div>
+                <div class="lesson-meta">
+                  <span class="badge" [ngClass]="l.level.toLowerCase()">{{ l.level }}</span>
+                  <span class="lesson-topic">{{ l.topic }}</span>
+                  <span class="lesson-count">🎵 {{ l.lineCount ?? l.lines.length }} câu</span>
+                </div>
               </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      }
     </section>
   }
 
