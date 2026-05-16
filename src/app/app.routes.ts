@@ -5,5 +5,6 @@ export const routes: Routes = [
   { path: 'messages', loadComponent: () => import('./pages/chat/chat').then(m => m.ChatComponent) },
   { path: 'call', loadComponent: () => import('./pages/call/call').then(m => m.CallComponent) },
   { path: 'video', loadComponent: () => import('./pages/video/video').then(m => m.VideoComponent) },
+  { path: 'audio', loadComponent: () => import('./pages/audio/audio').then(m => m.AudioComponent) },
   { path: '**', redirectTo: '' },
 ];

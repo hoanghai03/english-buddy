@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
+import { AdBannerComponent } from '../../shared/ad-banner';
 
 @Component({
   selector: 'app-home',
+  imports: [AdBannerComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -21,7 +23,7 @@ export class HomeComponent {
   features = [
     { icon: '💬', title: 'Chat tự nhiên', desc: 'Nhắn tin với AI như chat với bạn bè thật sự', route: '/messages' },
     { icon: '📞', title: 'Gọi điện AI', desc: 'Luyện kỹ năng nghe nói với giọng nói bản ngữ', route: '/messages' },
-    { icon: '🎬', title: 'Luyện nghe YouTube', desc: 'Click transcript để nhảy đến đoạn đó, chép chính tả từng câu', route: '/video' },
+    { icon: '🎙️', title: 'Luyện nghe chép', desc: 'Nghe câu tiếng Anh rồi chép lại — luyện tai nghe không cần video', route: '/audio' },
     { icon: '🎯', title: 'Đúng cấp độ', desc: 'Beginner, Intermediate, Advanced — chọn theo trình', route: '/messages' },
   ];
 

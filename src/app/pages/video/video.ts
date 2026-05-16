@@ -162,13 +162,19 @@ export class VideoComponent implements OnInit, OnDestroy {
     const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
     const expected = normalize(line.en).split(/\s+/);
     const actual = normalize(this.inputText).split(/\s+/);
-    this.wordResults.set(
-      expected.map((word, i) => ({
-        word,
-        typed: actual[i] ?? '',
-        correct: word === (actual[i] ?? ''),
-      }))
-    );
+    const results = expected.map((word, i) => ({
+      word,
+      typed: actual[i] ?? '',
+      correct: word === (actual[i] ?? ''),
+    }));
+    if (actual.length > expected.length) {
+      results.push({
+        word: 'Thừa',
+        typed: actual.slice(expected.length).join(' '),
+        correct: false,
+      });
+    }
+    this.wordResults.set(results);
     this.checked.set(true);
   }
 

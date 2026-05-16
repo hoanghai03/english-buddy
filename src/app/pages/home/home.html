@@ -1,5 +1,13 @@
 <div class="landing">
 
+  <!-- SIDEBAR ADS (chỉ hiện khi màn hình đủ rộng, >= 1320px) -->
+  <div class="ad-sidebar ad-left">
+    <app-ad-banner [vertical]="true" />
+  </div>
+  <div class="ad-sidebar ad-right">
+    <app-ad-banner [vertical]="true" />
+  </div>
+
   <!-- NAV -->
   <nav class="nav">
     <div class="nav-logo">✨ English Buddy</div>
@@ -62,6 +70,11 @@
         </div>
       }
     </div>
+  </section>
+
+  <!-- AD BANNER -->
+  <section class="ad-section">
+    <app-ad-banner />
   </section>
 
   <!-- VIDEO CTA BANNER -->

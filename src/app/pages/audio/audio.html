@@ -1,0 +1,243 @@
+<div class="audio-page">
+
+  <!-- CONFETTI -->
+  @for (p of confettiPieces(); track $index) {
+    <div class="confetti-piece"
+      [style.left.%]="p.x"
+      [style.background]="p.color"
+      [style.animationDelay]="p.delay + 's'"
+      [style.animationDuration]="p.duration + 's'">
+    </div>
+  }
+
+  <!-- HEADER -->
+  <header class="aheader">
+    <button class="back-btn" (click)="goBack()">← Trang chủ</button>
+    <div class="aheader-center">
+      <div class="aheader-logo">✨ English Buddy</div>
+      <div class="mode-toggle">
+        <button [ngClass]="{ active: mode() === 'dictation' }" (click)="setMode('dictation')">✏️ Chép chính tả</button>
+        <button [ngClass]="{ active: mode() === 'listen' }" (click)="setMode('listen')">🎧 Luyện nghe</button>
+      </div>
+    </div>
+    @if (activeLesson()) {
+      <button class="change-btn" (click)="activeLesson.set(null)">Đổi bài ↕</button>
+    } @else {
+      <div></div>
+    }
+  </header>
+
+  <!-- LESSON SELECTION -->
+  @if (!activeLesson()) {
+    <section class="lesson-section">
+      <h2 class="lesson-heading">Chọn bài luyện nghe</h2>
+      <p class="lesson-sub">18 bài · 6 cấp độ A1–C2 · Nghe và chép lại từng câu.</p>
+
+      <div class="level-filter">
+        <button [ngClass]="{ active: filterLevel() === 'all' }" (click)="filterLevel.set('all')">Tất cả</button>
+        @for (lv of levels; track lv) {
+          <button [ngClass]="['lv-' + lv.toLowerCase(), filterLevel() === lv ? 'active' : '']" (click)="filterLevel.set(lv)">{{ lv }}</button>
+        }
+      </div>
+
+      <div class="lesson-grid">
+        @for (l of filteredLessons(); track l.id) {
+          <div class="lesson-card" (click)="selectLesson(l)">
+            <div class="lesson-icon">🎙️</div>
+            <div class="lesson-body">
+              <div class="lesson-title">{{ l.title }}</div>
+              <div class="lesson-desc">{{ l.description }}</div>
+              <div class="lesson-meta">
+                <span class="badge" [ngClass]="l.level.toLowerCase()">{{ l.level }}</span>
+                <span class="lesson-topic">{{ l.topic }}</span>
+                <span class="lesson-count">🎵 {{ l.lines.length }} câu</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ACTIVE LESSON -->
+  @if (activeLesson(); as lesson) {
+    <div class="lesson-view">
+
+      <!-- LISTEN MODE -->
+      @if (mode() === 'listen') {
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🎧 {{ lesson.title }}</span>
+            <div class="lang-toggle">
+              <button [ngClass]="{ active: lang() === 'en' }" (click)="setLang('en')">🇬🇧 EN</button>
+              <button [ngClass]="{ active: lang() === 'vi' }" (click)="setLang('vi')">🇻🇳 VI</button>
+            </div>
+          </div>
+          <div class="speed-bar">
+            <span class="speed-label">Tốc độ:</span>
+            <div class="speed-group">
+              <button [ngClass]="{ active: speechRate() === 0.7 }" (click)="speechRate.set(0.7)">Chậm</button>
+              <button [ngClass]="{ active: speechRate() === 0.9 }" (click)="speechRate.set(0.9)">Bình thường</button>
+              <button [ngClass]="{ active: speechRate() === 1.2 }" (click)="speechRate.set(1.2)">Nhanh</button>
+            </div>
+          </div>
+          <div class="listen-list">
+            @for (line of lesson.lines; let i = $index; track i) {
+              <div class="lline" [ngClass]="{ active: activeLine() === i }">
+                <span class="lnum">{{ i + 1 }}</span>
+                <span class="ltext">{{ lang() === 'en' ? line.en : line.vi }}</span>
+                <button class="lplay-btn" (click)="playLine(line, i)" [disabled]="speaking()">
+                  {{ activeLine() === i && speaking() ? '⏳' : '🔊' }}
+                </button>
+              </div>
+            }
+          </div>
+          <div class="listen-tip">💡 Click 🔊 để nghe từng câu. Chuyển sang Chép chính tả để luyện.</div>
+        </div>
+      }
+
+      <!-- DICTATION MODE -->
+      @if (mode() === 'dictation') {
+        <div class="panel dictation-panel">
+
+          <!-- Progress -->
+          <div class="dict-progress-row">
+            <div class="dict-progress-bar">
+              <div
+                class="dict-progress-fill"
+                [style.width.%]="((dictIndex() + 1) / (lesson.lines.length || 1)) * 100"
+              ></div>
+            </div>
+            <span class="dict-progress-label">Câu {{ dictIndex() + 1 }} / {{ lesson.lines.length }}</span>
+            <button class="settings-gear-btn" (click)="showSettings.set(true)" title="Cấu hình phím tắt">⚙️</button>
+          </div>
+
+          <!-- Vietnamese hint — ẩn cho đến khi check đúng hoặc reveal -->
+          <div class="dict-hint" [ngClass]="{ 'dict-hint-blur': !checked() && !revealed() }">
+            🇻🇳 {{ currentLine?.vi || '...' }}
+          </div>
+          <div class="dict-instructions">
+            📌 Nghe câu rồi gõ lại chính xác. Không phân biệt hoa thường, bỏ qua dấu câu.
+          </div>
+
+          <!-- Play + speed -->
+          <div class="play-row">
+            <button class="play-sentence-btn" (click)="playCurrent()" [disabled]="speaking()">
+              @if (speaking()) { ⏳ Đang phát... }
+              @else { 🔊 Nghe câu này }
+            </button>
+            <div class="speed-group">
+              <button [ngClass]="{ active: speechRate() === 0.7 }" (click)="speechRate.set(0.7)">Chậm</button>
+              <button [ngClass]="{ active: speechRate() === 0.9 }" (click)="speechRate.set(0.9)">Bình thường</button>
+              <button [ngClass]="{ active: speechRate() === 1.2 }" (click)="speechRate.set(1.2)">Nhanh</button>
+            </div>
+          </div>
+
+          <!-- Result -->
+          @if (revealed()) {
+            <div class="revealed-box">
+              <div class="revealed-label">✅ Đáp án:</div>
+              <div class="revealed-text">{{ currentLine?.en }}</div>
+            </div>
+          } @else if (wordResults().length > 0) {
+            <div class="result-box">
+              @if (checked()) {
+                <div class="result-score" [ngClass]="score() >= 80 ? 'good' : score() >= 50 ? 'ok' : 'bad'">
+                  {{ score() }}% đúng
+                </div>
+              }
+              <div class="word-result-list">
+                @for (r of wordResults(); track $index) {
+                  <span class="wchip" [ngClass]="r.correct ? 'correct' : (r.typed ? 'wrong' : 'pending')">
+                    {{ r.word }}
+                    @if (!r.correct && r.typed) {
+                      <span class="wtyped">(bạn: {{ r.typed }})</span>
+                    }
+                  </span>
+                }
+              </div>
+              @if (hint()) {
+                <div class="hint-msg">{{ hint() }}</div>
+              }
+            </div>
+          }
+
+          <!-- Input -->
+          <div class="dict-input-wrap">
+            <textarea
+              #dictInput
+              class="dict-input"
+              [(ngModel)]="inputText"
+              [disabled]="checked()"
+              [placeholder]="'Gõ những gì bạn nghe được... (' + displayKey(keyConfig().check) + ' để kiểm tra)'"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="dict-actions">
+            <button class="dict-btn nav" (click)="prev()" [disabled]="dictIndex() === 0">◀ Trước</button>
+            @if (!checked()) {
+              <button class="dict-btn check" (click)="checkAnswer()" [disabled]="!inputText.trim()">
+                ✓ Kiểm tra
+              </button>
+            } @else if (!revealed()) {
+              <button class="dict-btn reveal" (click)="reveal()">👁 Hiện đáp án</button>
+              <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === lesson.lines.length - 1">
+                Tiếp ▶
+              </button>
+            } @else {
+              <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === lesson.lines.length - 1">
+                Tiếp ▶
+              </button>
+            }
+            @if (!checked()) {
+              <button class="dict-btn nav" (click)="next()" [disabled]="dictIndex() === lesson.lines.length - 1">
+                Bỏ qua ▶
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- SETTINGS MODAL -->
+      @if (showSettings()) {
+        <div class="settings-overlay" (click)="showSettings.set(false)">
+          <div class="settings-modal" (click)="$event.stopPropagation()">
+
+            <div class="settings-header">
+              <span class="settings-title">⚙️ Cấu hình phím tắt</span>
+              <button class="settings-close" (click)="showSettings.set(false)">✕</button>
+            </div>
+
+            <p class="settings-desc">Click vào ô phím rồi nhấn phím bất kỳ để thay đổi. Nhấn Esc để hủy.</p>
+
+            <div class="settings-list">
+              @for (action of configActions; track action.key) {
+                <div class="settings-row">
+                  <span class="settings-label">{{ action.label }}</span>
+                  <button
+                    class="key-chip"
+                    [ngClass]="{ capturing: capturingAction() === action.key }"
+                    (click)="startCapture(action.key)"
+                  >
+                    {{ capturingAction() === action.key ? 'Nhấn phím...' : displayKey(keyConfig()[action.key]) }}
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="settings-footer">
+              <button class="reset-keys-btn" (click)="resetKeyConfig()">↺ Khôi phục mặc định</button>
+              <button class="done-btn" (click)="showSettings.set(false)">✓ Xong</button>
+            </div>
+
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

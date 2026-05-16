@@ -292,6 +292,31 @@
 }
 
 /* VIDEO BANNER */
+/* Sidebar ads — chỉ hiện khi còn đủ chỗ 2 bên content */
+.ad-sidebar {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  display: none;
+  z-index: 10;
+}
+
+.ad-left  { left:  8px; }
+.ad-right { right: 8px; }
+
+@media (min-width: 1320px) {
+  .ad-sidebar { display: block; }
+}
+
+.ad-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 48px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .video-banner {
   background: linear-gradient(135deg, #1e1b4b, #4c1d95);
   padding: 0 48px;
