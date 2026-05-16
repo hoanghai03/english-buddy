@@ -440,15 +440,11 @@
 .ad-right { right: 8px; }
 
 @media (min-width: 1320px) {
-  .ad-sidebar { display: block; }
+  .ad-sidebar { display: none; }
 }
 
 .ad-section {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 48px 40px;
-  width: 100%;
-  box-sizing: border-box;
+  display: none;
 }
 
 .video-banner {

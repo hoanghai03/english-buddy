@@ -1,10 +1,12 @@
 import { Component, ElementRef, HostListener, OnDestroy, ViewChild, signal, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { AudioLessonService } from '../../services/audio-lesson.service';
 import { AudioLesson, AudioLine } from '../../models/audio-lesson.model';
 import { WordResult } from '../../models/lesson.model';
+import { CommentService, CommentDto } from '../../services/comment.service';
+import { AuthService } from '../../services/auth.service';
 
 type Mode = 'dictation' | 'listen';
 type Lang = 'en' | 'vi';
@@ -36,7 +38,7 @@ const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').tri
 
 @Component({
   selector: 'app-audio',
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, RouterLink],
   templateUrl: './audio.html',
   styleUrl: './audio.css',
 })
@@ -44,7 +46,74 @@ export class AudioComponent implements OnDestroy {
   @ViewChild('dictInput') dictInputRef?: ElementRef<HTMLTextAreaElement>;
 
   private audioLessonService = inject(AudioLessonService);
+  private commentService = inject(CommentService);
+  private authService = inject(AuthService);
   private router = inject(Router);
+
+  // ── Auth ──────────────────────────────────────────────────────────
+  isLoggedIn = this.authService.isLoggedIn;
+  currentUserId = computed(() => this.authService.currentUser()?.id ?? null);
+
+  // ── Comments ──────────────────────────────────────────────────────
+  comments = signal<CommentDto[]>([]);
+  commentsLoading = signal(false);
+  newComment = '';
+  submittingComment = signal(false);
+
+  loadComments(lessonId: string) {
+    this.commentsLoading.set(true);
+    this.commentService.getComments(lessonId).subscribe({
+      next: data => { this.comments.set(data); this.commentsLoading.set(false); },
+      error: () => this.commentsLoading.set(false),
+    });
+  }
+
+  submitComment() {
+    const lesson = this.activeLesson();
+    if (!lesson || !this.newComment.trim()) return;
+    this.submittingComment.set(true);
+    this.commentService.createComment(lesson.id, this.newComment.trim()).subscribe({
+      next: c => {
+        this.comments.update(list => [c, ...list]);
+        this.newComment = '';
+        this.submittingComment.set(false);
+      },
+      error: () => this.submittingComment.set(false),
+    });
+  }
+
+  deleteComment(c: CommentDto) {
+    const lesson = this.activeLesson();
+    if (!lesson) return;
+    this.commentService.deleteComment(lesson.id, c.id).subscribe({
+      next: () => this.comments.update(list => list.filter(x => x.id !== c.id)),
+    });
+  }
+
+  toggleReaction(c: CommentDto, type: 'Like' | 'Dislike') {
+    const lesson = this.activeLesson();
+    if (!lesson) return;
+    this.commentService.toggleReaction(lesson.id, c.id, type).subscribe({
+      next: () => {
+        this.comments.update(list => list.map(x => {
+          if (x.id !== c.id) return x;
+          const wasActive = (type === 'Like' && x.myReaction === true) || (type === 'Dislike' && x.myReaction === false);
+          const newReaction = wasActive ? null : (type === 'Like' ? true : false);
+          return {
+            ...x,
+            myReaction: newReaction,
+            likeCount: x.likeCount + (type === 'Like' ? (wasActive ? -1 : 1) : 0),
+            dislikeCount: x.dislikeCount + (type === 'Dislike' ? (wasActive ? -1 : 1) : 0),
+          };
+        }));
+      },
+    });
+  }
+
+  formatDate(iso: string): string {
+    const d = new Date(iso);
+    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
 
   constructor() {
     this.audioLessonService.loadLessons();
@@ -154,6 +223,8 @@ export class AudioComponent implements OnDestroy {
     this.activeLesson.set(full);
     this.dictIndex.set(0);
     this.resetDictation();
+    this.comments.set([]);
+    this.loadComments(lesson.id);
   }
 
   speak(text: string) {

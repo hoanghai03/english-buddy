@@ -207,6 +207,71 @@
         </div>
       }
 
+      <!-- COMMENT SECTION -->
+      <div class="comment-section">
+        <h3 class="comment-heading">💬 Bình luận</h3>
+
+        @if (isLoggedIn()) {
+          <div class="comment-form">
+            <textarea
+              class="comment-input"
+              [(ngModel)]="newComment"
+              placeholder="Viết bình luận của bạn..."
+              rows="2"
+            ></textarea>
+            <button
+              class="comment-submit"
+              [disabled]="!newComment.trim() || submittingComment()"
+              (click)="submitComment()"
+            >
+              {{ submittingComment() ? 'Đang gửi...' : 'Gửi' }}
+            </button>
+          </div>
+        } @else {
+          <p class="comment-login-hint">
+            <a routerLink="/login">Đăng nhập</a> để bình luận.
+          </p>
+        }
+
+        @if (commentsLoading()) {
+          <div class="comment-loading">Đang tải bình luận...</div>
+        } @else if (comments().length === 0) {
+          <div class="comment-empty">Chưa có bình luận nào. Hãy là người đầu tiên!</div>
+        } @else {
+          <div class="comment-list">
+            @for (c of comments(); track c.id) {
+              <div class="comment-item">
+                <div class="comment-avatar">{{ c.username.charAt(0).toUpperCase() }}</div>
+                <div class="comment-body">
+                  <div class="comment-meta">
+                    <span class="comment-username">{{ c.username }}</span>
+                    <span class="comment-date">{{ formatDate(c.createdAt) }}</span>
+                  </div>
+                  <div class="comment-content">{{ c.content }}</div>
+                  <div class="comment-actions">
+                    <button
+                      class="reaction-btn"
+                      [class.active]="c.myReaction === true"
+                      (click)="toggleReaction(c, 'Like')"
+                      [disabled]="!isLoggedIn()"
+                    >👍 {{ c.likeCount }}</button>
+                    <button
+                      class="reaction-btn"
+                      [class.active]="c.myReaction === false"
+                      (click)="toggleReaction(c, 'Dislike')"
+                      [disabled]="!isLoggedIn()"
+                    >👎 {{ c.dislikeCount }}</button>
+                    @if (currentUserId() === c.userId) {
+                      <button class="delete-btn" (click)="deleteComment(c)">Xóa</button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
       <!-- SETTINGS MODAL -->
       @if (showSettings()) {
         <div class="settings-overlay" (click)="showSettings.set(false)">
