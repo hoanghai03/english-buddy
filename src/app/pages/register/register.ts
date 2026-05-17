@@ -86,15 +86,30 @@ export class RegisterComponent implements AfterViewInit {
       this.error.set('Mật khẩu xác nhận không khớp');
       return;
     }
-    if (this.password.length < 6) {
-      this.error.set('Mật khẩu phải có ít nhất 6 ký tự');
+    if (this.password.length < 8) {
+      this.error.set('Mật khẩu phải có ít nhất 8 ký tự');
+      return;
+    }
+    if (!/[A-Z]/.test(this.password)) {
+      this.error.set('Mật khẩu phải có ít nhất một chữ hoa');
+      return;
+    }
+    if (!/[0-9]/.test(this.password)) {
+      this.error.set('Mật khẩu phải có ít nhất một chữ số');
       return;
     }
     this.loading.set(true);
     this.error.set(null);
     this.auth.register({ username: this.username.trim(), email: this.email.trim(), password: this.password }).subscribe({
       next: () => this.router.navigate(['/']),
-      error: (e) => { this.error.set(e.error?.message ?? 'Đăng ký thất bại, thử lại sau'); this.loading.set(false); },
+      error: (e) => {
+        const apiError = e.error;
+        const msg = apiError?.errors?.length
+          ? apiError.errors.join(' ')
+          : (apiError?.title ?? 'Đăng ký thất bại, thử lại sau');
+        this.error.set(msg);
+        this.loading.set(false);
+      },
     });
   }
 }

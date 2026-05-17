@@ -104,6 +104,19 @@
   white-space: nowrap;
 }
 
+.nav-admin {
+  padding: 5px 12px;
+  background: #6366f1;
+  color: #fff;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.nav-admin:hover { background: #4f46e5; }
+
 .nav-logout {
   padding: 6px 14px;
   background: transparent;

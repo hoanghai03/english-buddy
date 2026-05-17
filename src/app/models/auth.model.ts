@@ -19,6 +19,7 @@ export interface UserDto {
   username: string;
   email?: string;
   avatarUrl?: string;
+  role: string;
 }
 
 export interface AuthResponse {

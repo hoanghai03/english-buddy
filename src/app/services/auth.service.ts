@@ -12,6 +12,7 @@ export class AuthService {
 
   currentUser = signal<UserDto | null>(this.loadUser());
   isLoggedIn = computed(() => this.currentUser() !== null);
+  isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
   getToken(): string | null {
     return localStorage.getItem('auth_token');

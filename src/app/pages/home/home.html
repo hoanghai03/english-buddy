@@ -29,6 +29,9 @@
         <div class="nav-user">
           <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
           <span class="nav-username">{{ auth.currentUser()!.username }}</span>
+          @if (auth.isAdmin()) {
+            <a class="nav-admin" routerLink="/admin">Admin</a>
+          }
           <button class="nav-logout" (click)="auth.logout()">Đăng xuất</button>
         </div>
       } @else {

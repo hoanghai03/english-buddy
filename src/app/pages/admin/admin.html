@@ -1,0 +1,172 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <a routerLink="/" class="back-link">← Trang chủ</a>
+    <h1>Admin Dashboard</h1>
+    <span class="admin-badge">{{ auth.currentUser()?.username }}</span>
+  </header>
+
+  <nav class="admin-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+      Tổng quan
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">
+      Quản lý người dùng
+    </button>
+  </nav>
+
+  <!-- ── OVERVIEW TAB ── -->
+  @if (activeTab() === 'overview') {
+    @if (loading()) {
+      <div class="loading-state">Đang tải dữ liệu...</div>
+    } @else if (error()) {
+      <div class="error-state">{{ error() }}</div>
+    } @else if (stats(); as s) {
+
+      <!-- Stat cards -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon">👁️</div>
+          <div class="stat-value">{{ s.totalViews | number }}</div>
+          <div class="stat-label">Tổng lượt truy cập</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value">{{ s.todayViews | number }}</div>
+          <div class="stat-label">Hôm nay</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👤</div>
+          <div class="stat-value">{{ s.totalUsers | number }}</div>
+          <div class="stat-label">Người dùng</div>
+        </div>
+      </div>
+
+      <!-- Chart: 7 ngày gần nhất -->
+      <div class="card">
+        <h2 class="card-title">Lượt truy cập 7 ngày qua</h2>
+        <div class="chart-wrap">
+          <canvas #chartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Top pages + Recent activity side by side -->
+      <div class="two-col">
+        <div class="card">
+          <h2 class="card-title">Top trang truy cập</h2>
+          @if (s.topPages.length === 0) {
+            <p class="empty-msg">Chưa có dữ liệu</p>
+          } @else {
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Trang</th><th>Lượt</th></tr></thead>
+              <tbody>
+                @for (p of s.topPages; track p.path; let i = $index) {
+                  <tr>
+                    <td class="num">{{ i + 1 }}</td>
+                    <td class="mono">{{ p.path }}</td>
+                    <td class="count-cell">{{ p.count | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Hoạt động gần đây</h2>
+          @if (s.recentActivity.length === 0) {
+            <p class="empty-msg">Chưa có dữ liệu</p>
+          } @else {
+            <div class="activity-list">
+              @for (a of s.recentActivity; track a.occurredAt) {
+                <div class="activity-row">
+                  <div class="activity-top">
+                    <span class="activity-path">{{ a.path }}</span>
+                    <span class="activity-time">{{ a.occurredAt | date:'HH:mm dd/MM' }}</span>
+                  </div>
+                  <div class="activity-meta">
+                    @if (a.username) {
+                      <span class="meta-tag user-tag">👤 {{ a.username }}</span>
+                    }
+                    <span class="meta-tag">🌍 {{ locationLabel(a) }}</span>
+                    @if (a.browser) {
+                      <span class="meta-tag">🌐 {{ a.browser }}</span>
+                    }
+                    @if (a.os) {
+                      <span class="meta-tag">💻 {{ a.os }}</span>
+                    }
+                    @if (a.ipAddress) {
+                      <span class="meta-tag ip-tag">{{ a.ipAddress }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+    }
+  }
+
+  <!-- ── USERS TAB ── -->
+  @if (activeTab() === 'users') {
+    <div class="card">
+      <h2 class="card-title">Danh sách người dùng</h2>
+
+      @if (usersLoading()) {
+        <div class="loading-state">Đang tải...</div>
+      } @else if (users().length === 0) {
+        <p class="empty-msg">Chưa có người dùng</p>
+      } @else {
+        <table class="data-table users-table">
+          <thead>
+            <tr>
+              <th>Người dùng</th>
+              <th>Email</th>
+              <th>Quyền</th>
+              <th>Ngày tạo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of users(); track u.id) {
+              <tr [class.current-user]="u.id === auth.currentUser()?.id">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">{{ u.username[0].toUpperCase() }}</div>
+                    <span>{{ u.username }}</span>
+                  </div>
+                </td>
+                <td class="email-cell">{{ u.email ?? '—' }}</td>
+                <td>
+                  <span class="role-badge" [ngClass]="u.role === 'admin' ? 'role-admin' : 'role-user'">
+                    {{ u.role }}
+                  </span>
+                </td>
+                <td class="date-cell">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  @if (u.id !== auth.currentUser()?.id) {
+                    <select
+                      class="role-select"
+                      [value]="u.role"
+                      [disabled]="updatingRole() === u.id"
+                      (change)="updateRole(u, $any($event.target).value)"
+                    >
+                      <option value="user">user</option>
+                      <option value="admin">admin</option>
+                    </select>
+                    @if (updatingRole() === u.id) {
+                      <span class="saving-text">Đang lưu...</span>
+                    }
+                  } @else {
+                    <span class="you-label">Bạn</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>
