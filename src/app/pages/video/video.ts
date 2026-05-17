@@ -32,15 +32,73 @@ export class VideoComponent implements OnInit, OnDestroy {
   mode = signal<Mode>('listen');
   lang = signal<Lang>('en');
 
-  // Transcript fetched dynamically from YouTube
+  // Sidebar
+  sidebarCollapsed = signal(false);
+  activeNav = signal('videos');
+  activeLang = signal('EN');
+
+  // Import
+  importTab = signal<'youtube' | 'upload'>('youtube');
+  importUrl = '';
+  importing = signal(false);
+  importError = signal('');
+  importPanelOpen = signal(false);
+
+  // Search + category + level
+  searchQuery = signal('');
+  categoryFilter = signal('Toàn bộ');
+  levelFilter = signal('all');
+
+  readonly cefrLevels = [
+    { key: 'A1', name: 'Sơ cấp',    color: '#16a34a' },
+    { key: 'A2', name: 'Cơ bản',    color: '#0891b2' },
+    { key: 'B1', name: 'Trung cấp', color: '#2563eb' },
+    { key: 'B2', name: 'Khá',       color: '#7c3aed' },
+    { key: 'C1', name: 'Nâng cao',  color: '#db2777' },
+    { key: 'C2', name: 'Thành thạo', color: '#9f1239' },
+  ];
+
+  filteredLessons = computed(() => {
+    const cat = this.categoryFilter();
+    const lv  = this.levelFilter();
+    const q   = this.searchQuery().toLowerCase().trim();
+    let lessons = this.lessons();
+
+    if (cat !== 'Toàn bộ') {
+      const topicMap: Record<string, string[]> = {
+        'Truyền động lực': ['Motivation'],
+        'Công nghệ': ['Technology', 'Tech'],
+        'Kinh doanh': ['Business'],
+        'Tin tức': ['News'],
+        'Phim': ['Film', 'Movie'],
+        'Văn hóa': ['Culture'],
+        'Podcast': ['Podcast'],
+        'AI': ['AI'],
+      };
+      const topics = topicMap[cat] ?? [cat];
+      lessons = lessons.filter(l => topics.some(t => l.topic.toLowerCase().includes(t.toLowerCase())));
+    }
+
+    if (lv !== 'all') {
+      lessons = lessons.filter(l => l.level === lv);
+    }
+
+    if (q) {
+      lessons = lessons.filter(l =>
+        l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q)
+      );
+    }
+
+    return lessons;
+  });
+
+  // Transcript
   currentTranscript = signal<TranscriptLine[]>([]);
   transcriptLoading = signal(false);
   transcriptError = signal('');
-
-  // Listen mode
   activeLineIndex = signal(-1);
 
-  // Dictation mode
+  // Dictation
   dictIndex = signal(0);
   inputText = '';
   checked = signal(false);
@@ -52,15 +110,51 @@ export class VideoComponent implements OnInit, OnDestroy {
     return Math.round((r.filter(w => w.correct).length / r.length) * 100);
   });
 
-  // Import
-  showImport = signal(false);
-  importUrl = '';
-  importing = signal(false);
-  importError = signal('');
-
   private player: any = null;
   private tracker: any = null;
   private pauseAt: number | null = null;
+
+  readonly streakDays = [
+    { label: 'Th2', filled: true },
+    { label: 'Th3', filled: true },
+    { label: 'Th4', filled: true },
+    { label: 'Th5', filled: false },
+    { label: 'Th6', filled: false },
+    { label: 'Th7', filled: false },
+    { label: 'CN', filled: false },
+  ];
+
+  readonly learningLangs = [
+    { code: 'JA', flag: '🇯🇵' },
+    { code: 'EN', flag: '🇺🇸' },
+    { code: 'ZH-CN', flag: '🇨🇳' },
+    { code: 'KO', flag: '🇰🇷' },
+  ];
+
+  readonly categories = [
+    { key: 'Toàn bộ', label: 'Toàn bộ', icon: '🍀' },
+    { key: 'Podcast', label: 'Podcast', icon: '🎙' },
+    { key: 'Công nghệ', label: 'Công nghệ', icon: '💻' },
+    { key: 'AI', label: 'AI', icon: '🤖' },
+    { key: 'Tin tức', label: 'Tin tức', icon: '📰' },
+    { key: 'Truyền động lực', label: 'Truyền động lực', icon: '🔥' },
+    { key: 'Kinh doanh', label: 'Kinh doanh', icon: '💼' },
+    { key: 'Phim', label: 'Phim', icon: '🎬' },
+    { key: 'Văn hóa', label: 'Văn hóa', icon: '🏛' },
+    { key: 'Khác', label: 'Khác', icon: '✨' },
+  ];
+
+  getLevelLabel(level: string): string {
+    const map: Record<string, string> = {
+      A1: 'A1 · Sơ cấp',
+      A2: 'A2 · Cơ bản',
+      B1: 'B1 · Trung cấp',
+      B2: 'B2 · Khá',
+      C1: 'C1 · Nâng cao',
+      C2: 'C2 · Thành thạo',
+    };
+    return map[level] ?? level;
+  }
 
   ngOnInit() {
     (window as any)['onYouTubeIframeAPIReady'] = () => {
@@ -168,11 +262,7 @@ export class VideoComponent implements OnInit, OnDestroy {
       correct: word === (actual[i] ?? ''),
     }));
     if (actual.length > expected.length) {
-      results.push({
-        word: 'Thừa',
-        typed: actual.slice(expected.length).join(' '),
-        correct: false,
-      });
+      results.push({ word: 'Thừa', typed: actual.slice(expected.length).join(' '), correct: false });
     }
     this.wordResults.set(results);
     this.checked.set(true);
@@ -236,14 +326,14 @@ export class VideoComponent implements OnInit, OnDestroy {
             videoId,
             title,
             description: 'Video nhập từ YouTube',
-            level: 'Intermediate',
+            level: 'B1',
             topic: 'Custom',
             transcript: [],
           };
           this.lessonService.addLesson(lesson);
           this.importing.set(false);
-          this.showImport.set(false);
           this.importUrl = '';
+          this.importPanelOpen.set(false);
           this.selectLesson(lesson);
         });
       },

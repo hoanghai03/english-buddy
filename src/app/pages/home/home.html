@@ -1,6 +1,6 @@
 <div class="landing">
 
-  <!-- SIDEBAR ADS (chỉ hiện khi màn hình đủ rộng, >= 1320px) -->
+  <!-- SIDEBAR ADS -->
   <div class="ad-sidebar ad-left">
     <app-ad-banner [vertical]="true" />
   </div>
@@ -19,11 +19,28 @@
       <span>Luyện Ngoại Ngữ</span>
     </a>
 
+    <!-- Desktop nav links -->
+    <div class="nav-links">
+      <a routerLink="/" class="nav-link">Trang chủ</a>
+      <a routerLink="/video" class="nav-link">Học qua Video</a>
+      <a routerLink="/audio" class="nav-link">Luyện nghe</a>
+      <a routerLink="/messages" class="nav-link">Chat AI</a>
+      <a routerLink="/call" class="nav-link">Luyện nói</a>
+    </div>
+
     <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
 
     <div class="nav-menu">
+      <!-- Mobile-only nav links -->
+      <div class="nav-links-mobile">
+        <a routerLink="/" class="nav-link-m" (click)="menuOpen.set(false)">🏠 Trang chủ</a>
+        <a routerLink="/video" class="nav-link-m" (click)="menuOpen.set(false)">🎬 Học qua Video</a>
+        <a routerLink="/audio" class="nav-link-m" (click)="menuOpen.set(false)">🎧 Luyện nghe</a>
+        <a routerLink="/messages" class="nav-link-m" (click)="menuOpen.set(false)">💬 Chat AI</a>
+        <a routerLink="/call" class="nav-link-m" (click)="menuOpen.set(false)">📞 Luyện nói</a>
+      </div>
       <div class="lang-switcher">
         @for (l of lang.langs; track l.code) {
           <button
@@ -56,6 +73,13 @@
 
   <!-- HERO -->
   <section class="hero">
+    <!-- Decorative background blobs -->
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
     <div class="hero-content">
       <div class="hero-badge">{{ lang.t('hero_badge') }}</div>
       <h1 class="hero-title">
@@ -78,20 +102,30 @@
           </div>
         }
       </div>
+      <div class="hero-trust">
+        <span class="trust-item">✅ Miễn phí 100%</span>
+        <span class="trust-item">🔒 Không cần thẻ tín dụng</span>
+        <span class="trust-item">⚡ Bắt đầu ngay lập tức</span>
+      </div>
     </div>
 
-    <!-- Floating character cards -->
-    <div class="hero-cards">
-      @for (char of previews; track char.id) {
-        <div class="float-card" (click)="start()">
-          <img [src]="char.avatar" [alt]="char.name" />
-          <div class="float-card-info">
-            <div class="float-name">{{ char.name }}</div>
-            <div class="float-job">{{ char.flag }} {{ char.location }}</div>
+    <!-- Floating character cards + greeting badges -->
+    <div class="hero-visual">
+      <div class="greeting-badge gb-top">Hello 👋</div>
+      <div class="greeting-badge gb-right">こんにちは 🇯🇵</div>
+      <div class="greeting-badge gb-bottom">你好 🇨🇳</div>
+      <div class="hero-cards">
+        @for (char of previews; track char.id) {
+          <div class="float-card" (click)="start()">
+            <img [src]="char.avatar" [alt]="char.name" />
+            <div class="float-card-info">
+              <div class="float-name">{{ char.name }}</div>
+              <div class="float-job">{{ char.flag }} {{ char.location }}</div>
+            </div>
+            <span class="online-dot"></span>
           </div>
-          <span class="online-dot"></span>
-        </div>
-      }
+        }
+      </div>
     </div>
   </section>
 
@@ -107,16 +141,67 @@
 
   <!-- FEATURES -->
   <section class="features">
+    <span class="section-badge">Tính năng nổi bật</span>
     <h2 class="section-title">{{ lang.t('features_title') }}</h2>
+    <p class="section-sub">Tất cả những gì bạn cần để luyện ngoại ngữ thật sự hiệu quả</p>
     <div class="feature-grid">
       @for (f of features(); track f.title) {
         <div class="feature-card" (click)="goTo(f.route)">
-          <div class="feature-icon">{{ f.icon }}</div>
+          <div class="feature-icon-wrap">
+            <div class="feature-icon">{{ f.icon }}</div>
+          </div>
           <div class="feature-title">{{ f.title }}</div>
           <div class="feature-desc">{{ f.desc }}</div>
           <div class="feature-arrow">→</div>
         </div>
       }
+    </div>
+  </section>
+
+  <!-- STEPS SECTION -->
+  <section class="steps-section">
+    <div class="steps-inner">
+      <span class="section-badge">Phương pháp học</span>
+      <h2 class="section-title">6 bước để thành thạo ngoại ngữ</h2>
+      <p class="section-sub">Từ con số 0 đến giao tiếp tự tin với lộ trình được thiết kế khoa học</p>
+      <div class="steps-grid">
+        <div class="step-card sc-blue">
+          <div class="step-num">01</div>
+          <div class="step-icon">🎭</div>
+          <div class="step-title">Chọn nhân vật AI</div>
+          <div class="step-desc">Tìm người bạn AI phù hợp với phong cách và mục tiêu học của bạn</div>
+        </div>
+        <div class="step-card sc-purple">
+          <div class="step-num">02</div>
+          <div class="step-icon">💬</div>
+          <div class="step-title">Luyện hội thoại</div>
+          <div class="step-desc">Chat hoặc gọi điện để rèn kỹ năng nói hoàn toàn tự nhiên</div>
+        </div>
+        <div class="step-card sc-amber">
+          <div class="step-num">03</div>
+          <div class="step-icon">🎬</div>
+          <div class="step-title">Học qua Video</div>
+          <div class="step-desc">Xem video YouTube với transcript song ngữ theo thời gian thực</div>
+        </div>
+        <div class="step-card sc-green">
+          <div class="step-num">04</div>
+          <div class="step-icon">🎧</div>
+          <div class="step-title">Luyện nghe chép</div>
+          <div class="step-desc">Nghe câu và chép lại — cải thiện tai nghe và chính tả từng ngày</div>
+        </div>
+        <div class="step-card sc-rose">
+          <div class="step-num">05</div>
+          <div class="step-icon">📈</div>
+          <div class="step-title">Theo dõi tiến độ</div>
+          <div class="step-desc">Thấy rõ sự tiến bộ qua từng ngày luyện tập không ngừng</div>
+        </div>
+        <div class="step-card sc-indigo">
+          <div class="step-num">06</div>
+          <div class="step-icon">🏆</div>
+          <div class="step-title">Đạt mục tiêu</div>
+          <div class="step-desc">Giao tiếp tự tin và tự nhiên như người bản ngữ thực thụ</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -128,6 +213,7 @@
   <!-- VIDEO CTA BANNER -->
   <section class="video-banner">
     <div class="video-banner-inner">
+      <div class="video-banner-icon">🎬</div>
       <div class="video-banner-text">
         <div class="video-banner-tag">{{ lang.t('video_tag') }}</div>
         <h2>{{ lang.t('video_h2') }}</h2>
@@ -139,12 +225,64 @@
 
   <!-- FINAL CTA -->
   <section class="cta-section">
-    <h2>{{ lang.t('cta_h2') }}</h2>
-    <p>{{ lang.t('cta_p') }}</p>
-    <button class="btn-primary large" (click)="start()">{{ lang.t('btn_messages') }}</button>
+    <div class="cta-inner">
+      <div class="cta-emoji">🚀</div>
+      <h2>{{ lang.t('cta_h2') }}</h2>
+      <p>{{ lang.t('cta_p') }}</p>
+      <button class="btn-primary large" (click)="start()">{{ lang.t('btn_messages') }}</button>
+      <div class="cta-note">Miễn phí · Không cần đăng ký · Bắt đầu trong 30 giây</div>
+    </div>
   </section>
 
+  <!-- FOOTER -->
   <footer class="footer">
-    <span>{{ lang.t('footer') }}</span>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="footer-logo" routerLink="/">
+          <svg width="28" height="28" viewBox="50 50 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="50" y="50" width="160" height="160" rx="36" fill="#1E40AF"/>
+            <path d="M95 80L95 170L170 170" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="170" cy="170" r="9" fill="#FBBF24"/>
+          </svg>
+          <span>Luyện Ngoại Ngữ</span>
+        </a>
+        <p class="footer-tagline">Học tiếng Anh, Nhật, Trung qua hội thoại AI.<br>Miễn phí — không áp lực — tiến bộ thật sự.</p>
+        <div class="footer-socials">
+          <a class="social-btn" href="#" aria-label="Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+          </a>
+          <a class="social-btn" href="#" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.76a4.85 4.85 0 0 1-1-.07z"/></svg>
+          </a>
+          <a class="social-btn" href="mailto:support@lnng.app" aria-label="Email">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>Tính năng</h4>
+          <a routerLink="/messages">💬 Chat AI</a>
+          <a routerLink="/call">📞 Luyện nói</a>
+          <a routerLink="/video">🎬 Học qua Video</a>
+          <a routerLink="/audio">🎧 Luyện nghe</a>
+        </div>
+        <div class="footer-col">
+          <h4>Tài khoản</h4>
+          <a routerLink="/login">Đăng nhập</a>
+          <a routerLink="/register">Đăng ký miễn phí</a>
+        </div>
+        <div class="footer-col">
+          <h4>Ngôn ngữ học</h4>
+          <span>🇬🇧 Tiếng Anh</span>
+          <span>🇯🇵 Tiếng Nhật</span>
+          <span>🇨🇳 Tiếng Trung</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Luyện Ngoại Ngữ · Made with ❤️ for students</span>
+    </div>
   </footer>
+
 </div>

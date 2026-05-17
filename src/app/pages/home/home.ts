@@ -34,7 +34,7 @@ export class HomeComponent {
   previews = this.characterService.characters.slice(0, 4);
   menuOpen = signal(false);
 
-  start() { this.router.navigate(['/messages']); }
+  start() { this.router.navigate(['/video']); }
   goVideo() { this.router.navigate(['/video']); }
   goTo(route: string) { this.router.navigate([route]); }
 }
