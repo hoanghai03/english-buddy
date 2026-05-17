@@ -4,8 +4,7 @@ import {
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { LessonService } from '../../services/lesson.service';
 import { TranscriptService } from '../../services/transcript.service';
 import { VideoLesson, TranscriptLine, WordResult } from '../../models/lesson.model';
@@ -157,6 +156,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    void this.lessonService.loadLessons();
     (window as any)['onYouTubeIframeAPIReady'] = () => {
       this.zone.run(() => {
         if (this.activeLesson()) this.createPlayer();
@@ -169,7 +169,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectLesson(lesson: VideoLesson) {
+  async selectLesson(lesson: VideoLesson) {
     this.activeLesson.set(lesson);
     this.dictIndex.set(0);
     this.activeLineIndex.set(-1);
@@ -178,22 +178,15 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.transcriptError.set('');
     this.transcriptLoading.set(true);
 
-    this.transcriptService.fetch(lesson.videoId).subscribe({
-      next: (lines) => {
-        this.zone.run(() => {
-          this.currentTranscript.set(lines);
-          this.transcriptLoading.set(false);
-          if (!lines.length) {
-            this.transcriptError.set('Video này không có phụ đề tiếng Anh.');
-          }
-        });
-      },
-      error: () => {
-        this.zone.run(() => {
-          this.transcriptLoading.set(false);
-          this.transcriptError.set('Không thể tải transcript. Kiểm tra kết nối mạng.');
-        });
-      },
+    const detail = lesson.transcript.length ? lesson : await this.lessonService.loadLessonDetail(lesson.id);
+    this.zone.run(() => {
+      const lines = detail?.transcript ?? [];
+      if (detail) this.activeLesson.set(detail);
+      this.currentTranscript.set(lines);
+      this.transcriptLoading.set(false);
+      if (!lines.length) {
+        this.transcriptError.set('Video này chưa có phụ đề trong hệ thống. Hãy nhập lại link YouTube để lưu phụ đề.');
+      }
     });
 
     setTimeout(() => {
@@ -301,7 +294,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  importVideo() {
+  async importVideo() {
     const videoId = this.extractVideoId(this.importUrl);
     if (!videoId) {
       this.importError.set('URL không hợp lệ. Nhập link YouTube hoặc video ID (11 ký tự).');
@@ -310,40 +303,22 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.importing.set(true);
     this.importError.set('');
 
-    forkJoin({
-      title: this.transcriptService.fetchTitle(videoId).pipe(catchError(() => of('Video YouTube'))),
-      transcript: this.transcriptService.fetch(videoId),
-    }).subscribe({
-      next: ({ title, transcript }) => {
-        this.zone.run(() => {
-          if (!transcript.length) {
-            this.importing.set(false);
-            this.importError.set('Video này không có phụ đề tiếng Anh. Thử video khác.');
-            return;
-          }
-          const lesson: VideoLesson = {
-            id: Date.now().toString(),
-            videoId,
-            title,
-            description: 'Video nhập từ YouTube',
-            level: 'B1',
-            topic: 'Custom',
-            transcript: [],
-          };
-          this.lessonService.addLesson(lesson);
-          this.importing.set(false);
-          this.importUrl = '';
-          this.importPanelOpen.set(false);
-          this.selectLesson(lesson);
-        });
-      },
-      error: () => {
-        this.zone.run(() => {
-          this.importing.set(false);
-          this.importError.set('Không thể nhập video. Kiểm tra kết nối mạng.');
-        });
-      },
-    });
+    try {
+      const lines = await firstValueFrom(this.transcriptService.fetch(videoId));
+      if (!lines.length) {
+        this.importing.set(false);
+        this.importError.set('Video không có phụ đề tiếng Anh. Hãy kiểm tra video có bật CC không.');
+        return;
+      }
+      const lesson = await this.lessonService.importYouTube(this.importUrl, lines);
+      this.importing.set(false);
+      this.importUrl = '';
+      this.importPanelOpen.set(false);
+      void this.selectLesson(lesson);
+    } catch {
+      this.importing.set(false);
+      this.importError.set('Không thể nhập video. Vui lòng thử lại.');
+    }
   }
 
   setMode(m: Mode) { this.mode.set(m); this.resetDictation(); }
