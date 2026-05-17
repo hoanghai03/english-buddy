@@ -1227,6 +1227,10 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes panel-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
 
 /* ══════════════════════════════════════════
    PLAYING MODE
@@ -1453,24 +1457,83 @@
 }
 
 @media (max-width: 640px) {
-  .hero-banner { margin: 10px 12px; padding: 20px 18px; }
-  .hero-title { font-size: 1.05rem; }
-  .hero-fields { flex-direction: column; }
-  .hero-field-group, .hero-field-url { flex: none; width: 100%; }
-  .hero-create-btn { width: 100%; justify-content: center; }
+  /* Full-page scroll — unlock the 100vh overflow jail */
+  .app-layout     { height: auto; min-height: 100vh; overflow: visible; }
+  .main-content   { height: auto; overflow: visible; }
+  .selection-view { overflow: visible; }
 
-  .topbar { padding: 8px 12px; }
-  .topbar-my-video-btn span { display: none; }
+  /* Sidebar completely hidden — reclaim every pixel */
+  .sidebar { display: none; }
 
+  /* ── Topbar ── */
+  .topbar { padding: 8px 12px; gap: 8px; }
+  .topbar-lib-btn span,
+  .topbar-home-btn span { display: none; }
+  .topbar-lib-btn,
+  .topbar-home-btn { padding: 8px 10px; }
+
+  /* Import panel: bottom sheet instead of dropdown */
+  .import-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: panel-slide-up 0.25s ease-out;
+    box-shadow: 0 -8px 32px rgba(15,23,42,0.2);
+  }
+
+  /* ── Hero ── */
+  .hero-banner { margin: 10px 12px; padding: 16px; }
+  .hero-title  { font-size: 1rem; margin-bottom: 10px; }
+  .hero-label  { font-size: 0.65rem; margin-bottom: 8px; }
+  .hero-chip   { font-size: 0.68rem; padding: 4px 8px; }
+
+  /* ── Category & level bars ── */
   .cat-bar { padding: 0 12px; }
-  .playlist-section { padding: 16px 12px 32px; }
-  .playlist-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .level-bar { padding: 8px 12px 10px; gap: 4px; }
+  .level-bar-label { display: none; }
+  .level-btn { padding: 4px 10px 4px 5px; font-size: 0.74rem; }
+  .level-btn.lv-all { padding: 4px 10px; }
 
-  .player-topbar { padding: 0 12px; }
+  /* ── Playlist ── */
+  .playlist-section { padding: 14px 12px 40px; }
+  .playlist-heading { font-size: 1rem; }
+  .playlist-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card-body  { padding: 10px 12px 12px; }
+  .card-title { font-size: 0.84rem; }
+  .card-desc  { display: none; }
+
+  /* ── Player: scrollable stacked layout ── */
+  .player-view   { overflow: visible; flex: none; }
+  .player-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 12px;
+    gap: 8px;
+  }
   .player-lesson-name { display: none; }
-  .player-mode-toggle button { padding: 6px 10px; font-size: 0.78rem; }
+  .player-mode-toggle button { padding: 6px 10px; font-size: 0.76rem; gap: 4px; }
+  .player-body      { flex-direction: column; overflow: visible; }
+  .player-video-col { width: 100%; border-right: none; border-bottom: 1px solid #1E2A4A; }
+  .player-panel-col { overflow: visible; min-height: auto; }
+  .panel            { overflow: visible; }
+  .transcript-list  { overflow: visible; max-height: none; flex: none; }
+  .dictation-panel  { overflow: visible; }
 }
 
 @media (max-width: 400px) {
   .playlist-grid { grid-template-columns: 1fr; }
+  /* Import button: icon only on very small screens */
+  .topbar-import-btn span { display: none; }
+  .import-caret { display: none; }
+  .topbar-import-btn { padding: 8px 10px; }
+  /* Mode toggle: tighter */
+  .player-mode-toggle button { padding: 5px 8px; font-size: 0.72rem; }
 }
