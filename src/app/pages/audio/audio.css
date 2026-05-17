@@ -37,7 +37,7 @@
 
 .audio-page {
   min-height: 100vh;
-  background: #f5f3ff;
+  background: #EFF6FF;
   display: flex;
   flex-direction: column;
 }
@@ -49,15 +49,15 @@
   justify-content: space-between;
   padding: 14px 28px;
   background: #fff;
-  border-bottom: 1.5px solid #ede9fe;
-  box-shadow: 0 1px 8px rgba(124,58,237,0.06);
+  border-bottom: 1.5px solid #DBEAFE;
+  box-shadow: 0 1px 8px rgba(30,64,175,0.06);
   gap: 16px;
 }
 
 .back-btn {
   background: none;
   border: none;
-  color: #7c3aed;
+  color: #1E40AF;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -74,19 +74,19 @@
 }
 
 .aheader-logo {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 7px;
   white-space: nowrap;
 }
 
 .mode-toggle {
   display: flex;
-  background: #f5f3ff;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   padding: 3px;
   gap: 3px;
@@ -106,23 +106,23 @@
 
 .mode-toggle button.active {
   background: white;
-  color: #7c3aed;
-  box-shadow: 0 2px 8px rgba(124,58,237,0.15);
+  color: #1E40AF;
+  box-shadow: 0 2px 8px rgba(30,64,175,0.15);
 }
 
 .change-btn {
   background: none;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   padding: 7px 16px;
-  color: #7c3aed;
+  color: #1E40AF;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.change-btn:hover { background: #f5f3ff; }
+.change-btn:hover { background: #EFF6FF; }
 
 /* ── LESSON SELECTION ───────────────────────── */
 .lesson-section {
@@ -135,7 +135,7 @@
 .lesson-heading {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #1e1b4b;
+  color: #0F172A;
   margin-bottom: 8px;
 }
 
@@ -154,7 +154,7 @@
 
 .level-filter button {
   padding: 6px 18px;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   background: white;
   font-size: 0.84rem;
@@ -164,15 +164,15 @@
   transition: all 0.18s;
 }
 
-.level-filter button:hover { border-color: #7c3aed; color: #7c3aed; }
-.level-filter button.active { background: #7c3aed; border-color: #7c3aed; color: white; }
+.level-filter button:hover { border-color: #1E40AF; color: #1E40AF; }
+.level-filter button.active { background: #1E40AF; border-color: #1E40AF; color: white; }
 
 .level-filter button.lv-a1.active  { background: #059669; border-color: #059669; }
 .level-filter button.lv-a2.active  { background: #047857; border-color: #047857; }
 .level-filter button.lv-b1.active  { background: #d97706; border-color: #d97706; }
 .level-filter button.lv-b2.active  { background: #ea580c; border-color: #ea580c; }
 .level-filter button.lv-c1.active  { background: #dc2626; border-color: #dc2626; }
-.level-filter button.lv-c2.active  { background: #7c3aed; border-color: #7c3aed; }
+.level-filter button.lv-c2.active  { background: #1E40AF; border-color: #1E40AF; }
 
 .lesson-grid {
   display: grid;
@@ -183,7 +183,7 @@
 .lesson-card {
   background: white;
   border-radius: 16px;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   padding: 22px 20px;
   cursor: pointer;
   transition: all 0.2s;
@@ -193,8 +193,8 @@
 }
 
 .lesson-card:hover {
-  border-color: #7c3aed;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.12);
+  border-color: #1E40AF;
+  box-shadow: 0 4px 20px rgba(30, 64, 175, 0.12);
   transform: translateY(-2px);
 }
 
@@ -208,7 +208,7 @@
 .lesson-title {
   font-weight: 700;
   font-size: 1rem;
-  color: #1e1b4b;
+  color: #0F172A;
   margin-bottom: 6px;
 }
 
@@ -242,7 +242,7 @@
 
 .lesson-topic {
   font-size: 0.8rem;
-  color: #7c3aed;
+  color: #1E40AF;
   font-weight: 600;
 }
 
@@ -264,8 +264,8 @@
 .panel {
   background: white;
   border-radius: 20px;
-  border: 1.5px solid #ede9fe;
-  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08);
+  border: 1.5px solid #DBEAFE;
+  box-shadow: 0 4px 24px rgba(30, 64, 175, 0.08);
   width: 100%;
   max-width: 680px;
   padding: 28px;
@@ -282,13 +282,13 @@
 .panel-title {
   font-weight: 700;
   font-size: 1.05rem;
-  color: #1e1b4b;
+  color: #0F172A;
 }
 
 .lang-toggle {
   display: flex;
-  background: #f5f3ff;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   padding: 3px;
   gap: 3px;
@@ -308,7 +308,7 @@
 
 .lang-toggle button.active {
   background: white;
-  color: #7c3aed;
+  color: #1E40AF;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
@@ -327,7 +327,7 @@
 
 .settings-gear-btn {
   background: none;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -340,7 +340,7 @@
   justify-content: center;
 }
 
-.settings-gear-btn:hover { background: #f5f3ff; border-color: #7c3aed; }
+.settings-gear-btn:hover { background: #EFF6FF; border-color: #1E40AF; }
 
 /* ── SETTINGS OVERLAY ─────────────────────────── */
 .settings-overlay {
@@ -374,7 +374,7 @@
 .settings-title {
   font-weight: 800;
   font-size: 1.05rem;
-  color: #1e1b4b;
+  color: #0F172A;
 }
 
 .settings-close {
@@ -421,10 +421,10 @@
 .key-chip {
   min-width: 80px;
   padding: 6px 14px;
-  border: 2px solid #ede9fe;
+  border: 2px solid #DBEAFE;
   border-radius: 8px;
-  background: #f5f3ff;
-  color: #7c3aed;
+  background: #EFF6FF;
+  color: #1E40AF;
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
@@ -433,18 +433,18 @@
   font-family: monospace;
 }
 
-.key-chip:hover { border-color: #7c3aed; background: #ede9fe; }
+.key-chip:hover { border-color: #1E40AF; background: #DBEAFE; }
 
 .key-chip.capturing {
-  border-color: #ec4899;
-  background: #fdf2f8;
-  color: #be185d;
+  border-color: #3B82F6;
+  background: #EFF6FF;
+  color: #1D4ED8;
   animation: pulse-border 0.8s ease-in-out infinite;
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: #ec4899; }
-  50% { border-color: #f9a8d4; }
+  0%, 100% { border-color: #3B82F6; }
+  50% { border-color: #93C5FD; }
 }
 
 .settings-footer {
@@ -471,7 +471,7 @@
   padding: 9px 22px;
   border: none;
   border-radius: 50px;
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
   font-size: 0.85rem;
   font-weight: 700;
@@ -483,8 +483,8 @@
 
 .speed-group {
   display: flex;
-  background: #f5f3ff;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   padding: 3px;
   gap: 3px;
@@ -504,7 +504,7 @@
 
 .speed-group button.active {
   background: white;
-  color: #7c3aed;
+  color: #1E40AF;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
@@ -527,14 +527,14 @@
 }
 
 .lline.active {
-  background: #ede9fe;
-  border-color: #7c3aed;
+  background: #DBEAFE;
+  border-color: #1E40AF;
 }
 
 .lnum {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #7c3aed;
+  color: #1E40AF;
   width: 20px;
   flex-shrink: 0;
 }
@@ -542,13 +542,13 @@
 .ltext {
   flex: 1;
   font-size: 0.92rem;
-  color: #1e1b4b;
+  color: #0F172A;
   line-height: 1.5;
 }
 
 .lplay-btn {
   background: none;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -559,8 +559,8 @@
 }
 
 .lplay-btn:hover:not(:disabled) {
-  background: #ede9fe;
-  border-color: #7c3aed;
+  background: #DBEAFE;
+  border-color: #1E40AF;
 }
 
 .lplay-btn:disabled {
@@ -586,21 +586,21 @@
 .dict-progress-bar {
   flex: 1;
   height: 6px;
-  background: #ede9fe;
+  background: #DBEAFE;
   border-radius: 50px;
   overflow: hidden;
 }
 
 .dict-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7c3aed, #ec4899);
+  background: linear-gradient(90deg, #1E40AF, #3B82F6);
   border-radius: 50px;
   transition: width 0.3s ease;
 }
 
 .dict-progress-label {
   font-size: 0.82rem;
-  color: #7c3aed;
+  color: #1E40AF;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -611,8 +611,8 @@
 }
 
 .dict-hint {
-  background: #f5f3ff;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  border: 1.5px solid #DBEAFE;
   border-radius: 12px;
   padding: 14px 18px;
   font-size: 0.95rem;
@@ -636,7 +636,7 @@
 }
 
 .play-sentence-btn {
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
   border: none;
   border-radius: 50px;
@@ -739,7 +739,7 @@
 
 .dict-input {
   width: 100%;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 0.95rem;
@@ -750,7 +750,7 @@
   font-family: inherit;
 }
 
-.dict-input:focus { border-color: #7c3aed; }
+.dict-input:focus { border-color: #1E40AF; }
 .dict-input:disabled { background: #f9fafb; color: #9ca3af; }
 
 .dict-actions {
@@ -775,15 +775,15 @@
 }
 
 .dict-btn.nav {
-  background: #f5f3ff;
-  color: #7c3aed;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1.5px solid #DBEAFE;
 }
 
-.dict-btn.nav:hover:not(:disabled) { background: #ede9fe; }
+.dict-btn.nav:hover:not(:disabled) { background: #DBEAFE; }
 
 .dict-btn.check {
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
   flex: 1;
 }
@@ -811,15 +811,15 @@
   margin-top: 24px;
   background: white;
   border-radius: 20px;
-  border: 1.5px solid #ede9fe;
-  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08);
+  border: 1.5px solid #DBEAFE;
+  box-shadow: 0 4px 24px rgba(30, 64, 175, 0.08);
   padding: 24px 28px;
 }
 
 .comment-heading {
   font-size: 1rem;
   font-weight: 700;
-  color: #1e1b4b;
+  color: #0F172A;
   margin: 0 0 16px;
 }
 
@@ -832,7 +832,7 @@
 
 .comment-input {
   width: 100%;
-  border: 1.5px solid #ede9fe;
+  border: 1.5px solid #DBEAFE;
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 0.9rem;
@@ -843,12 +843,12 @@
   box-sizing: border-box;
 }
 
-.comment-input:focus { border-color: #7c3aed; }
+.comment-input:focus { border-color: #1E40AF; }
 
 .comment-submit {
   align-self: flex-end;
   padding: 8px 22px;
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
   border: none;
   border-radius: 50px;
@@ -868,7 +868,7 @@
 }
 
 .comment-login-hint a {
-  color: #7c3aed;
+  color: #1E40AF;
   font-weight: 600;
   text-decoration: none;
 }
@@ -899,7 +899,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
   color: white;
   font-weight: 700;
   font-size: 0.9rem;
@@ -921,7 +921,7 @@
 .comment-username {
   font-size: 0.88rem;
   font-weight: 700;
-  color: #1e1b4b;
+  color: #0F172A;
 }
 
 .comment-date {
@@ -943,8 +943,8 @@
 }
 
 .reaction-btn {
-  background: #f5f3ff;
-  border: 1.5px solid #ede9fe;
+  background: #EFF6FF;
+  border: 1.5px solid #DBEAFE;
   border-radius: 50px;
   padding: 3px 10px;
   font-size: 0.8rem;
@@ -953,8 +953,8 @@
   transition: all 0.2s;
 }
 
-.reaction-btn:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; }
-.reaction-btn.active { background: #ede9fe; border-color: #7c3aed; color: #7c3aed; font-weight: 700; }
+.reaction-btn:hover:not(:disabled) { border-color: #1E40AF; color: #1E40AF; }
+.reaction-btn.active { background: #DBEAFE; border-color: #1E40AF; color: #1E40AF; font-weight: 700; }
 .reaction-btn:disabled { opacity: 0.5; cursor: default; }
 
 .delete-btn {

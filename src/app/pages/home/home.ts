@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CharacterService } from '../../services/character.service';
 import { LanguageService } from '../../services/language.service';
@@ -32,6 +32,7 @@ export class HomeComponent {
   ]);
 
   previews = this.characterService.characters.slice(0, 4);
+  menuOpen = signal(false);
 
   start() { this.router.navigate(['/messages']); }
   goVideo() { this.router.navigate(['/video']); }

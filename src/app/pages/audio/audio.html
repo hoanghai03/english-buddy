@@ -14,7 +14,14 @@
   <header class="aheader">
     <button class="back-btn" (click)="goBack()">← Trang chủ</button>
     <div class="aheader-center">
-      <div class="aheader-logo">✨ English Buddy</div>
+      <div class="aheader-logo">
+        <svg width="20" height="20" viewBox="50 50 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="50" y="50" width="160" height="160" rx="36" fill="#1E40AF"/>
+          <path d="M95 80L95 170L170 170" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="170" cy="170" r="9" fill="#FBBF24"/>
+        </svg>
+        Luyện Ngoại Ngữ
+      </div>
       <div class="mode-toggle">
         <button [ngClass]="{ active: mode() === 'dictation' }" (click)="setMode('dictation')">✏️ Chép chính tả</button>
         <button [ngClass]="{ active: mode() === 'listen' }" (click)="setMode('listen')">🎧 Luyện nghe</button>
