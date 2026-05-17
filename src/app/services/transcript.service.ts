@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, of, switchMap } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { TranscriptLine } from '../models/lesson.model';
 import { environment } from '../../environments/environment';
@@ -14,12 +14,9 @@ export class TranscriptService {
 
   fetch(videoId: string): Observable<TranscriptLine[]> {
     if (this.cache.has(videoId)) return of(this.cache.get(videoId)!);
-    return forkJoin({
-      en: this.tryGet(videoId, 'en'),
-      vi: this.tryGet(videoId, 'en', undefined, 'vi'),
-    }).pipe(
-      map(({ en, vi }) => {
-        const lines = this.merge(en, vi);
+    return this.tryGet(videoId, 'en').pipe(
+      map(en => {
+        const lines = this.merge(en, null);
         this.cache.set(videoId, lines);
         return lines;
       })
@@ -39,12 +36,10 @@ export class TranscriptService {
   private tryGet(videoId: string, lang: string, kind?: string, tlang?: string): Observable<any> {
     return this.ytGet(videoId, lang, kind, tlang).pipe(
       switchMap((res: any) => {
-        if (res?.events?.length) return of(res);
-        return this.ytGet(videoId, lang, 'asr', tlang);
-      }),
-      catchError(() => this.ytGet(videoId, lang, 'asr', tlang).pipe(
-        catchError(() => of(null))
-      ))
+        if (!res) return of(null);             // Request thất bại (429/lỗi) → không thử lại
+        if (res.events?.length) return of(res); // Có dữ liệu → dùng luôn
+        return this.ytGet(videoId, lang, 'asr', tlang); // Events rỗng → thử ASR
+      })
     );
   }
 
