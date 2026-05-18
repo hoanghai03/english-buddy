@@ -34,6 +34,10 @@ export class HomeComponent {
 
   previews = this.characterService.characters.slice(0, 4);
   menuOpen = signal(false);
+  langDropdownOpen = signal(false);
+  userDropdownOpen = signal(false);
+
+  currentLangObj = computed(() => this.lang.langs.find(l => l.code === this.lang.current()) ?? this.lang.langs[0]);
 
   getGreeting(char: { flag?: string }): string {
     const f = char.flag ?? '';

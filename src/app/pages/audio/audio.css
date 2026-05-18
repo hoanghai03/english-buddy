@@ -969,3 +969,57 @@
 }
 
 .delete-btn:hover { background: #fee2e2; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 640px)
+══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Header: 2 rows — back/change nút trên, mode toggle dưới */
+  .aheader {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .aheader-center {
+    order: 2;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .aheader-logo { display: none; }
+
+  .mode-toggle button {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+
+  .back-btn { font-size: 0.82rem; }
+
+  .change-btn {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Lesson section */
+  .lesson-section { padding: 24px 12px; }
+  .lesson-heading { font-size: 1.4rem; }
+  .lesson-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Panel */
+  .lesson-view { padding: 16px 12px; }
+  .panel { padding: 18px 14px; }
+
+  /* Play row: stack vertically on small screens */
+  .play-row { flex-direction: column; align-items: stretch; }
+  .play-sentence-btn { width: 100%; }
+
+  /* Action buttons */
+  .dict-actions { gap: 8px; }
+  .dict-btn { padding: 10px 14px; font-size: 0.84rem; }
+
+  /* Comment section */
+  .comment-section { padding: 18px 14px; }
+}

@@ -10,11 +10,7 @@
       <div class="sidebar-top">
         <div class="sidebar-logo" (click)="goBack()">
           <div class="logo-mark">
-            <svg width="28" height="28" viewBox="50 50 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect x="50" y="50" width="160" height="160" rx="36" fill="#3B82F6"/>
-              <path d="M95 80L95 170L170 170" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="170" cy="170" r="9" fill="#FBBF24"/>
-            </svg>
+            <img src="owl-logo.svg" width="28" height="28" alt="" style="display:block">
           </div>
           @if (!sidebarCollapsed()) {
             <span class="sidebar-brand">Luyện Ngoại Ngữ</span>
@@ -147,7 +143,24 @@
 
           <!-- Topbar -->
           <div class="topbar">
-            <div class="topbar-search">
+
+            <!-- Home (mobile only, leftmost) -->
+            <button class="topbar-home-btn" (click)="goBack()" title="Trang chủ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </button>
+
+            <!-- Search circle (mobile only — click to expand) -->
+            <button class="topbar-search-circle" (click)="mobileSearchOpen.set(true)" aria-label="Tìm kiếm">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </button>
+
+            <!-- Full search bar (always on desktop; overlay on mobile when open) -->
+            <div class="topbar-search" [class.mobile-open]="mobileSearchOpen()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="topbar-search-icon">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
@@ -161,13 +174,18 @@
               @if (searchQuery()) {
                 <button class="search-clear-btn" (click)="searchQuery.set('')">✕</button>
               }
+              <button class="search-mobile-close" (click)="mobileSearchOpen.set(false)" aria-label="Đóng">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
             </div>
 
             <div class="topbar-actions">
 
               <!-- Nhập video trigger + panel -->
               <div class="import-trigger-wrap">
-                <button class="topbar-import-btn" [class.active]="importPanelOpen()" (click)="importPanelOpen.update(v => !v)">
+                <button class="topbar-import-btn" [class.active]="importPanelOpen()" (click)="onImportBtnClick()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
@@ -179,6 +197,7 @@
                 </button>
 
                 @if (importPanelOpen()) {
+                  <div class="import-panel-backdrop" (click)="importPanelOpen.set(false)"></div>
                   <div class="import-panel">
                     <div class="import-panel-tabs">
                       <button class="import-panel-tab" [class.active]="importTab() === 'youtube'" (click)="importTab.set('youtube')">
@@ -208,16 +227,20 @@
                       <div class="import-panel-row">
                         <div class="import-panel-field">
                           <label class="import-panel-label">Ngôn ngữ video</label>
-                          <select class="import-panel-select">
-                            <option value="">Chọn ngôn ngữ</option>
-                            <option>Tiếng Anh</option><option>Tiếng Nhật</option><option>Tiếng Trung</option><option>Tiếng Hàn</option>
+                          <select class="import-panel-select" [(ngModel)]="importVideoLang">
+                            <option value="en">🇬🇧 Tiếng Anh</option>
+                            <option value="ja">🇯🇵 Tiếng Nhật</option>
+                            <option value="zh-Hans">🇨🇳 Tiếng Trung</option>
+                            <option value="ko">🇰🇷 Tiếng Hàn</option>
+                            <option value="fr">🇫🇷 Tiếng Pháp</option>
+                            <option value="de">🇩🇪 Tiếng Đức</option>
+                            <option value="es">🇪🇸 Tiếng Tây Ban Nha</option>
                           </select>
                         </div>
                         <div class="import-panel-field">
                           <label class="import-panel-label">Phụ đề</label>
                           <select class="import-panel-select">
-                            <option value="">Chọn phụ đề</option>
-                            <option>Tiếng Việt</option><option>Tiếng Anh</option>
+                            <option value="en">🇬🇧 Tiếng Anh</option>
                           </select>
                         </div>
                       </div>
@@ -243,17 +266,78 @@
                 <span>Thư viện</span>
               </button>
 
-              <!-- Trang chủ -->
-              <button class="topbar-home-btn" (click)="goBack()" title="Trang chủ">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <span>Trang chủ</span>
-              </button>
+              <!-- Tài khoản (mobile only) -->
+              <div class="account-trigger-wrap">
+                <button class="topbar-account-btn" (click)="accountDropdownOpen.update(v => !v)" [class.active]="accountDropdownOpen()" title="Tài khoản">
+                  @if (isLoggedIn() && currentUser()?.avatarUrl) {
+                    <img [src]="currentUser()!.avatarUrl!" alt="avatar" class="account-avatar-img">
+                  } @else if (isLoggedIn()) {
+                    <span class="account-avatar-text">{{ currentUser()!.username[0].toUpperCase() }}</span>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  }
+                </button>
+                @if (accountDropdownOpen()) {
+                  <div class="account-dropdown">
+                    @if (isLoggedIn()) {
+                      <div class="account-dropdown-header">
+                        <div class="account-dropdown-avatar">{{ currentUser()!.username[0].toUpperCase() }}</div>
+                        <div class="account-dropdown-info">
+                          <div class="account-dropdown-name">{{ currentUser()!.username }}</div>
+                          @if (currentUser()!.email) {
+                            <div class="account-dropdown-email">{{ currentUser()!.email }}</div>
+                          }
+                        </div>
+                      </div>
+                      <div class="account-dropdown-divider"></div>
+                      <button class="account-dropdown-item" (click)="goBack(); accountDropdownOpen.set(false)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        Trang chủ
+                      </button>
+                      <div class="account-dropdown-divider"></div>
+                      <button class="account-dropdown-logout" (click)="logout()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                          <polyline points="16 17 21 12 16 7"/>
+                          <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Đăng xuất
+                      </button>
+                    } @else {
+                      <div class="account-dropdown-guest">
+                        <p class="account-dropdown-guest-msg">Chưa đăng nhập</p>
+                        <a routerLink="/login" class="account-dropdown-login-btn" (click)="accountDropdownOpen.set(false)">Đăng nhập</a>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
 
             </div>
           </div>
+
+          <!-- Login prompt popup (mobile only, when not logged in and clicking import) -->
+          @if (loginPromptOpen()) {
+            <div class="login-prompt-overlay" (click)="loginPromptOpen.set(false)">
+              <div class="login-prompt-modal" (click)="$event.stopPropagation()">
+                <button class="login-prompt-close" (click)="loginPromptOpen.set(false)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+                <div class="login-prompt-icon">🔒</div>
+                <h3 class="login-prompt-title">Yêu cầu đăng nhập</h3>
+                <p class="login-prompt-desc">Bạn cần đăng nhập để nhập video học.</p>
+                <a routerLink="/login" class="login-prompt-btn" (click)="loginPromptOpen.set(false)">Đăng nhập ngay</a>
+              </div>
+            </div>
+          }
 
           <!-- Hero Banner -->
           <div class="hero-banner">
@@ -386,7 +470,7 @@
 
           <!-- Player topbar -->
           <div class="player-topbar">
-            <button class="player-back-btn" (click)="activeLesson.set(null)">
+            <button class="player-back-btn" (click)="closePlayer()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5M12 5l-7 7 7 7"/>
               </svg>
@@ -396,11 +480,11 @@
             <div class="player-mode-toggle">
               <button [class.active]="mode() === 'listen'" (click)="setMode('listen')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
-                Luyện nghe
+                <span class="mode-label">Luyện nghe</span>
               </button>
               <button [class.active]="mode() === 'dictation'" (click)="setMode('dictation')">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                Chép chính tả
+                <span class="mode-label">Chép chính tả</span>
               </button>
             </div>
 
@@ -467,23 +551,29 @@
                     <div class="dict-progress-row">
                       <div class="dict-progress-bar"><div class="dict-progress-fill" [style.width.%]="((dictIndex() + 1) / (currentTranscript().length || 1)) * 100"></div></div>
                       <span class="dict-progress-label">{{ dictIndex() + 1 }} / {{ currentTranscript().length }}</span>
+                      <button class="settings-gear-btn" (click)="showSettings.set(true)" title="Cấu hình phím tắt">⚙️</button>
                     </div>
                     <div class="dict-hint">🇻🇳 {{ currentLine?.vi || '(Không có bản dịch tiếng Việt)' }}</div>
                     <div class="dict-instructions">📌 Nghe câu rồi gõ lại chính xác. Không phân biệt hoa thường, bỏ qua dấu câu.</div>
                     <button class="play-sentence-btn" (click)="playSentence()">🔊 Nghe câu này</button>
                     @if (revealed()) {
                       <div class="revealed-box"><div class="revealed-label">✅ Đáp án:</div><div class="revealed-text">{{ currentLine?.en }}</div></div>
-                    } @else if (checked()) {
+                    } @else if (wordResults().length > 0) {
                       <div class="result-box">
-                        <div class="result-score" [ngClass]="score() >= 80 ? 'good' : score() >= 50 ? 'ok' : 'bad'">{{ score() }}% đúng</div>
+                        @if (checked()) {
+                          <div class="result-score" [ngClass]="score() >= 80 ? 'good' : score() >= 50 ? 'ok' : 'bad'">{{ score() }}% đúng</div>
+                        }
                         <div class="word-result-list">
                           @for (r of wordResults(); track $index) {
-                            <span class="wchip" [ngClass]="r.correct ? 'correct' : 'wrong'">{{ r.word }}@if (!r.correct && r.typed) {<span class="wtyped">({{ r.typed }})</span>}</span>
+                            <span class="wchip" [ngClass]="r.correct ? 'correct' : (r.typed ? 'wrong' : 'pending')">{{ r.word }}@if (!r.correct && r.typed) {<span class="wtyped">({{ r.typed }})</span>}</span>
                           }
                         </div>
+                        @if (hint()) {
+                          <div class="hint-msg">{{ hint() }}</div>
+                        }
                       </div>
                     }
-                    <textarea class="dict-input" [(ngModel)]="inputText" (keydown)="onEnter($event)" [disabled]="checked()" placeholder="Gõ những gì bạn nghe được... (Enter để kiểm tra)" rows="3"></textarea>
+                    <textarea #dictInput class="dict-input" [(ngModel)]="inputText" [disabled]="checked()" [placeholder]="'Gõ những gì bạn nghe được... (' + displayKey(keyConfig().check) + ' để kiểm tra)'" rows="3"></textarea>
                     <div class="dict-actions">
                       <button class="dict-btn nav" (click)="prev()" [disabled]="dictIndex() === 0">◀ Trước</button>
                       @if (!checked()) {
@@ -504,10 +594,83 @@
 
             </div>
           </div>
+          <!-- SETTINGS MODAL -->
+          @if (showSettings()) {
+            <div class="settings-overlay" (click)="showSettings.set(false)">
+              <div class="settings-modal" (click)="$event.stopPropagation()">
+                <div class="settings-header">
+                  <span class="settings-title">⚙️ Cấu hình phím tắt</span>
+                  <button class="settings-close" (click)="showSettings.set(false)">✕</button>
+                </div>
+                <p class="settings-desc">Click vào ô phím rồi nhấn phím bất kỳ để thay đổi. Nhấn Esc để hủy.</p>
+                <div class="settings-list">
+                  @for (action of configActions; track action.key) {
+                    <div class="settings-row">
+                      <span class="settings-label">{{ action.label }}</span>
+                      <button class="key-chip" [ngClass]="{ capturing: capturingAction() === action.key }" (click)="startCapture(action.key)">
+                        {{ capturingAction() === action.key ? 'Nhấn phím...' : displayKey(keyConfig()[action.key]) }}
+                      </button>
+                    </div>
+                  }
+                </div>
+                <div class="settings-footer">
+                  <button class="reset-keys-btn" (click)="resetKeyConfig()">↺ Khôi phục mặc định</button>
+                  <button class="done-btn" (click)="showSettings.set(false)">✓ Xong</button>
+                </div>
+              </div>
+            </div>
+          }
+
         </div>
       }
       <!-- ── END PLAYER VIEW ── -->
 
     </main>
   </div>
+
+  <!-- ════════════════════════════════
+       MOBILE BOTTOM NAV (< 640px)
+  ════════════════════════════════ -->
+  <nav class="mobile-bottom-nav" [class.hidden]="bottomNavHidden()">
+    <button class="mobile-nav-item" [class.active]="activeNav() === 'videos'" (click)="activeNav.set('videos')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+        <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+      </svg>
+      <span>Video</span>
+    </button>
+    <button class="mobile-nav-item" [class.active]="activeNav() === 'saved'" (click)="activeNav.set('saved')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21L12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        <path d="M10 9.5l4.5 2.5-4.5 2.5V9.5z" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Đã lưu</span>
+    </button>
+    <button class="mobile-nav-item" [class.active]="activeNav() === 'courses'" (click)="activeNav.set('courses')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 22 8.5 12 15 2 8.5"/>
+        <path d="M6 11.5v5a6 6 0 0 0 12 0v-5"/>
+        <line x1="22" y1="8.5" x2="22" y2="14"/>
+      </svg>
+      <span>Học tập</span>
+    </button>
+    <button class="mobile-nav-item" [class.active]="activeNav() === 'history'" (click)="activeNav.set('history')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v5h5"/>
+        <path d="M3.05 13A9 9 0 1 0 6 5.3L3 3"/>
+        <path d="M12 7v5l4 2"/>
+      </svg>
+      <span>Lịch sử</span>
+    </button>
+    <button class="mobile-nav-item" [class.active]="activeNav() === 'vocab'" (click)="activeNav.set('vocab')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+        <line x1="9" y1="13" x2="12" y2="13"/>
+      </svg>
+      <span>Từ vựng</span>
+    </button>
+  </nav>
 </div>

@@ -26,21 +26,41 @@
 
       <div class="nav-right">
         <span class="streak-chip">🔥 7 ngày</span>
-        <div class="lang-switcher">
-          @for (l of lang.langs; track l.code) {
-            <button class="lang-btn" [class.active]="lang.current() === l.code" (click)="lang.set(l.code)" [title]="l.label">
-              {{ l.flag }} {{ l.code.toUpperCase() }}
-            </button>
+        <!-- Language dropdown -->
+        <div class="lang-switcher-wrap">
+          <button class="lang-current-btn" (click)="langDropdownOpen.set(!langDropdownOpen())">
+            {{ currentLangObj().flag }} {{ currentLangObj().code.toUpperCase() }}
+            <svg class="lang-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          @if (langDropdownOpen()) {
+            <div class="lang-dd-backdrop" (click)="langDropdownOpen.set(false)"></div>
+            <div class="lang-dropdown">
+              @for (l of lang.langs; track l.code) {
+                <button class="lang-option" [class.active]="lang.current() === l.code" (click)="lang.set(l.code); langDropdownOpen.set(false)">
+                  {{ l.flag }} {{ l.label }}
+                </button>
+              }
+            </div>
           }
         </div>
+
+        <!-- User dropdown -->
         @if (auth.isLoggedIn()) {
-          <div class="nav-user">
-            <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
-            <span class="nav-username">{{ auth.currentUser()!.username }}</span>
-            @if (auth.isAdmin()) {
-              <a class="nav-admin-pill" routerLink="/admin">Admin</a>
+          <div class="nav-user-wrap">
+            <button class="nav-user-btn" (click)="userDropdownOpen.set(!userDropdownOpen())">
+              <span class="nav-username">{{ auth.currentUser()!.username }}</span>
+              <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
+            </button>
+            @if (userDropdownOpen()) {
+              <div class="user-dd-backdrop" (click)="userDropdownOpen.set(false)"></div>
+              <div class="user-dropdown">
+                @if (auth.isAdmin()) {
+                  <a class="user-dd-item" routerLink="/admin" (click)="userDropdownOpen.set(false)">Admin</a>
+                  <div class="user-dd-divider"></div>
+                }
+                <button class="user-dd-logout" (click)="auth.logout(); userDropdownOpen.set(false)">Đăng xuất</button>
+              </div>
             }
-            <button class="btn-ghost-sm" (click)="auth.logout()">Đăng xuất</button>
           </div>
         } @else {
           <a class="btn-ghost" routerLink="/login">Đăng nhập</a>
@@ -58,7 +78,7 @@
           <a routerLink="/call" class="nav-link-m" (click)="menuOpen.set(false)">📞 Luyện nói</a>
         </div>
         <div class="nav-drawer-bottom">
-          <div class="lang-switcher">
+          <div class="drawer-lang-row">
             @for (l of lang.langs; track l.code) {
               <button class="lang-btn" [class.active]="lang.current() === l.code" (click)="lang.set(l.code); menuOpen.set(false)" [title]="l.label">
                 {{ l.flag }} {{ l.code.toUpperCase() }}
@@ -66,9 +86,9 @@
             }
           </div>
           @if (auth.isLoggedIn()) {
-            <div class="nav-user">
+            <div class="drawer-user-row">
               <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
-              <span>{{ auth.currentUser()!.username }}</span>
+              <span class="nav-username">{{ auth.currentUser()!.username }}</span>
               <button class="btn-ghost-sm" (click)="auth.logout(); menuOpen.set(false)">Đăng xuất</button>
             </div>
           } @else {

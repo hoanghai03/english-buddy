@@ -1,43 +1,61 @@
-const https = require('https');
 const http = require('http');
+const { execFile } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 const PORT = 3001;
+const YT_DLP = '/usr/local/bin/yt-dlp';
+const CACHE_DIR = path.join(os.tmpdir(), 'yt-caption-cache');
 
-const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Accept': '*/*',
-};
+fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// Prevent duplicate yt-dlp processes for the same request
+const inFlight = new Map();
+
+function runYtDlp(videoId, lang, isAsr, outBase) {
+  return new Promise((resolve) => {
+    const args = [
+      '--no-warnings',
+      '--skip-download',
+      '--sub-format', 'json3',
+      '--sub-langs', lang,
+      isAsr ? '--write-auto-sub' : '--write-sub',
+      '-o', outBase,
+      `https://www.youtube.com/watch?v=${videoId}`,
+    ];
+    execFile(YT_DLP, args, { timeout: 30000 }, (err) => {
+      if (err) console.error(`[yt-dlp] v=${videoId} ${isAsr ? 'asr' : 'sub'} error:`, err.message.split('\n')[0]);
+      resolve();
+    });
+  });
 }
 
-async function fetchYouTube(url, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const result = await new Promise((resolve, reject) => {
-        https.get(url, { headers: HEADERS }, (res) => {
-          let body = '';
-          res.on('data', chunk => body += chunk);
-          res.on('end', () => resolve({ status: res.statusCode, body: body || '{}' }));
-        }).on('error', reject);
-      });
+async function getCaptions(videoId, lang, isAsr) {
+  const key = `${videoId}_${lang}_${isAsr ? 'asr' : 'sub'}`;
 
-      if (result.status === 429 && attempt < retries) {
-        console.warn(`YouTube 429, thử lại sau ${attempt}s... (lần ${attempt}/${retries})`);
-        await delay(1000 * attempt);
-        continue;
-      }
+  if (inFlight.has(key)) return inFlight.get(key);
 
-      return result;
-    } catch (err) {
-      console.error('Lỗi fetch YouTube:', err.message);
-      if (attempt === retries) return { status: 500, body: '{}' };
-      await delay(500 * attempt);
+  const outBase = path.join(CACHE_DIR, key);
+  const outputFile = `${outBase}.${lang}.json3`;
+
+  const promise = (async () => {
+    if (!fs.existsSync(outputFile)) {
+      await runYtDlp(videoId, lang, isAsr, outBase);
     }
-  }
-  return { status: 500, body: '{}' };
+    if (!fs.existsSync(outputFile)) return {};
+    try {
+      const data = JSON.parse(fs.readFileSync(outputFile, 'utf-8'));
+      console.log(`[timedtext] v=${videoId} lang=${lang} ${isAsr ? 'asr' : 'manual'} → ${(data.events || []).length} events`);
+      return data;
+    } catch {
+      return {};
+    }
+  })();
+
+  inFlight.set(key, promise);
+  promise.finally(() => inFlight.delete(key));
+  return promise;
 }
 
 http.createServer(async (req, res) => {
@@ -51,20 +69,31 @@ http.createServer(async (req, res) => {
   }
 
   const url = new URL(req.url, `http://localhost:${PORT}`);
-
   if (!url.pathname.startsWith('/api/timedtext')) {
     res.writeHead(404);
     res.end('Not found');
     return;
   }
 
-  const ytUrl = `https://www.youtube.com/api/timedtext?${url.searchParams.toString()}`;
-  const { status, body } = await fetchYouTube(ytUrl);
+  const videoId = url.searchParams.get('v');
+  const lang = url.searchParams.get('lang') ?? 'en';
+  const kind = url.searchParams.get('kind');
 
-  // Trả về 200 kể cả khi YouTube 429 (để Angular không throw error, chỉ nhận {} trống)
-  const finalStatus = status === 429 ? 200 : (status || 200);
-  res.writeHead(finalStatus, { 'Content-Type': 'application/json; charset=utf-8' });
-  res.end(body);
+  const sendEmpty = () => {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end('{}');
+  };
+
+  if (!videoId) return sendEmpty();
+
+  try {
+    const data = await getCaptions(videoId, lang, kind === 'asr');
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(data));
+  } catch (err) {
+    console.error('Lỗi xử lý:', err.message);
+    sendEmpty();
+  }
 
 }).listen(PORT, () => {
   console.log(`\n✅ Transcript proxy: http://localhost:${PORT}`);

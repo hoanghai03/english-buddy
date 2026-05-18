@@ -1,12 +1,13 @@
 import {
-  Component, OnInit, OnDestroy, signal, computed, inject, NgZone
+  Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, signal, computed, inject, NgZone
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { LessonService } from '../../services/lesson.service';
 import { TranscriptService } from '../../services/transcript.service';
+import { AuthService } from '../../services/auth.service';
 import { VideoLesson, TranscriptLine, WordResult } from '../../models/lesson.model';
 
 declare const YT: any;
@@ -14,17 +15,47 @@ declare const YT: any;
 type Mode = 'listen' | 'dictation';
 type Lang = 'en' | 'vi';
 
+interface KeyConfig {
+  replay: string;
+  check: string;
+  next: string;
+  prev: string;
+  reveal: string;
+}
+
+const DEFAULT_KEYS: KeyConfig = {
+  replay: 'Control',
+  check: 'Enter',
+  next: 'ArrowRight',
+  prev: 'ArrowLeft',
+  reveal: 'Escape',
+};
+
+const KEY_DISPLAY: Record<string, string> = {
+  ' ': 'Space', 'Enter': 'Enter', 'Escape': 'Esc', 'Control': 'Ctrl', 'Alt': 'Alt', 'Shift': 'Shift',
+  'ArrowRight': '→', 'ArrowLeft': '←', 'ArrowUp': '↑', 'ArrowDown': '↓',
+  'Backspace': 'Bksp', 'Tab': 'Tab',
+};
+
+const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+
 @Component({
   selector: 'app-video',
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, RouterLink],
   templateUrl: './video.html',
   styleUrl: './video.css',
 })
 export class VideoComponent implements OnInit, OnDestroy {
+  @ViewChild('dictInput') dictInputRef?: ElementRef<HTMLTextAreaElement>;
+
   private lessonService = inject(LessonService);
   private transcriptService = inject(TranscriptService);
   private router = inject(Router);
   private zone = inject(NgZone);
+  private authService = inject(AuthService);
+
+  readonly isLoggedIn = this.authService.isLoggedIn;
+  readonly currentUser = this.authService.currentUser;
 
   readonly lessons = this.lessonService.lessons;
   activeLesson = signal<VideoLesson | null>(null);
@@ -39,9 +70,15 @@ export class VideoComponent implements OnInit, OnDestroy {
   // Import
   importTab = signal<'youtube' | 'upload'>('youtube');
   importUrl = '';
+  importVideoLang = 'en';
   importing = signal(false);
   importError = signal('');
   importPanelOpen = signal(false);
+  accountDropdownOpen = signal(false);
+  loginPromptOpen = signal(false);
+
+  // Mobile search
+  mobileSearchOpen = signal(false);
 
   // Search + category + level
   searchQuery = signal('');
@@ -103,15 +140,52 @@ export class VideoComponent implements OnInit, OnDestroy {
   checked = signal(false);
   revealed = signal(false);
   wordResults = signal<WordResult[]>([]);
+  hint = signal<string | null>(null);
   score = computed(() => {
     const r = this.wordResults();
     if (!r.length) return 0;
     return Math.round((r.filter(w => w.correct).length / r.length) * 100);
   });
 
+  // Settings
+  showSettings = signal(false);
+  capturingAction = signal<keyof KeyConfig | null>(null);
+  keyConfig = signal<KeyConfig>({ ...DEFAULT_KEYS });
+
+  readonly configActions: { key: keyof KeyConfig; label: string }[] = [
+    { key: 'replay', label: '🔊 Nghe lại câu' },
+    { key: 'check', label: '✓ Kiểm tra / Gợi ý' },
+    { key: 'next', label: '▶ Câu tiếp theo' },
+    { key: 'prev', label: '◀ Câu trước' },
+    { key: 'reveal', label: '👁 Hiện đáp án' },
+  ];
+
+  displayKey(key: string): string {
+    return KEY_DISPLAY[key] ?? key.toUpperCase();
+  }
+
+  startCapture(action: keyof KeyConfig) { this.capturingAction.set(action); }
+
+  resetKeyConfig() {
+    this.keyConfig.set({ ...DEFAULT_KEYS });
+    this.capturingAction.set(null);
+  }
+
+  bottomNavHidden = signal(false);
+
   private player: any = null;
   private tracker: any = null;
   private pauseAt: number | null = null;
+  private lastScrollY = 0;
+  private readonly onScroll = () => {
+    const y = window.scrollY;
+    if (y > this.lastScrollY + 6 && y > 60) {
+      this.zone.run(() => this.bottomNavHidden.set(true));
+    } else if (y < this.lastScrollY - 6) {
+      this.zone.run(() => this.bottomNavHidden.set(false));
+    }
+    this.lastScrollY = y;
+  };
 
   readonly streakDays = [
     { label: 'Th2', filled: true },
@@ -157,6 +231,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     void this.lessonService.loadLessons();
+    window.addEventListener('scroll', this.onScroll, { passive: true });
     (window as any)['onYouTubeIframeAPIReady'] = () => {
       this.zone.run(() => {
         if (this.activeLesson()) this.createPlayer();
@@ -169,7 +244,17 @@ export class VideoComponent implements OnInit, OnDestroy {
     }
   }
 
+  closePlayer() {
+    if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
+    if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
+    this.activeLesson.set(null);
+  }
+
   async selectLesson(lesson: VideoLesson) {
+    // Always destroy the old player — its iframe is removed when activeLesson changes
+    if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
+    if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
+
     this.activeLesson.set(lesson);
     this.dictIndex.set(0);
     this.activeLineIndex.set(-1);
@@ -190,13 +275,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     });
 
     setTimeout(() => {
-      if ((window as any).YT?.Player) {
-        if (this.player) {
-          this.player.loadVideoById({ videoId: lesson.videoId, startSeconds: 0 });
-        } else {
-          this.createPlayer();
-        }
-      }
+      if ((window as any).YT?.Player) this.createPlayer();
     }, 150);
   }
 
@@ -246,19 +325,81 @@ export class VideoComponent implements OnInit, OnDestroy {
   checkAnswer() {
     const line = this.currentLine;
     if (!line || !this.inputText.trim()) return;
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
-    const expected = normalize(line.en).split(/\s+/);
-    const actual = normalize(this.inputText).split(/\s+/);
-    const results = expected.map((word, i) => ({
-      word,
-      typed: actual[i] ?? '',
-      correct: word === (actual[i] ?? ''),
+
+    const rawExpected = line.en.split(/\s+/);
+    const expected = rawExpected.map(normalize);
+    const typed = normalize(this.inputText).split(/\s+/).filter(w => w.length > 0);
+
+    const results: WordResult[] = expected.map((word, i) => ({
+      word: rawExpected[i],
+      typed: typed[i] ?? '',
+      correct: i < typed.length && word === typed[i],
     }));
-    if (actual.length > expected.length) {
-      results.push({ word: 'Thừa', typed: actual.slice(expected.length).join(' '), correct: false });
+    if (typed.length > expected.length) {
+      results.push({ word: 'Thừa', typed: typed.slice(expected.length).join(' '), correct: false });
     }
     this.wordResults.set(results);
-    this.checked.set(true);
+
+    const firstWrongIdx = typed.findIndex((w, i) => w !== expected[i]);
+
+    if (firstWrongIdx === -1 && typed.length >= expected.length) {
+      this.checked.set(true);
+      this.hint.set(null);
+    } else if (firstWrongIdx === -1) {
+      this.hint.set(`💡 Từ tiếp theo: "${rawExpected[typed.length]}"`);
+    } else {
+      this.hint.set(`📍 Sửa từ thứ ${firstWrongIdx + 1}: "${rawExpected[firstWrongIdx]}"`);
+      this.moveCursorToWord(firstWrongIdx);
+    }
+  }
+
+  private moveCursorToWord(wordIndex: number) {
+    setTimeout(() => {
+      const el = this.dictInputRef?.nativeElement;
+      if (!el) return;
+      el.focus();
+      const matches = [...this.inputText.matchAll(/\S+/g)];
+      const match = matches[wordIndex];
+      if (match?.index != null) {
+        el.setSelectionRange(match.index, match.index + match[0].length);
+      }
+    });
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleGlobalKey(e: KeyboardEvent) {
+    const capturing = this.capturingAction();
+    if (capturing !== null) {
+      e.preventDefault();
+      if (e.key !== 'Escape') {
+        this.keyConfig.update(c => ({ ...c, [capturing]: e.key }));
+      }
+      this.capturingAction.set(null);
+      return;
+    }
+
+    if (this.showSettings() || this.mode() !== 'dictation' || !this.activeLesson()) return;
+
+    const cfg = this.keyConfig();
+    const inTextarea = (e.target as HTMLElement).tagName === 'TEXTAREA';
+
+    if (e.key === cfg.replay) {
+      e.preventDefault();
+      this.playSentence();
+      return;
+    }
+
+    if (inTextarea && e.key === cfg.check && !e.shiftKey) {
+      e.preventDefault();
+      this.checkAnswer();
+      return;
+    }
+
+    if (!inTextarea) {
+      if (e.key === cfg.next) { e.preventDefault(); this.next(); }
+      else if (e.key === cfg.prev) { e.preventDefault(); this.prev(); }
+      else if (e.key === cfg.reveal && this.checked() && !this.revealed()) { e.preventDefault(); this.reveal(); }
+    }
   }
 
   reveal() { this.revealed.set(true); }
@@ -280,6 +421,20 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.checked.set(false);
     this.revealed.set(false);
     this.wordResults.set([]);
+    this.hint.set(null);
+  }
+
+  onImportBtnClick() {
+    if (!this.isLoggedIn()) {
+      this.loginPromptOpen.set(true);
+      return;
+    }
+    this.importPanelOpen.update(v => !v);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.accountDropdownOpen.set(false);
   }
 
   extractVideoId(url: string): string | null {
@@ -304,7 +459,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.importError.set('');
 
     try {
-      const lines = await firstValueFrom(this.transcriptService.fetch(videoId));
+      const lines = await firstValueFrom(this.transcriptService.fetch(videoId, this.importVideoLang));
       if (!lines.length) {
         this.importing.set(false);
         this.importError.set('Video không có phụ đề tiếng Anh. Hãy kiểm tra video có bật CC không.');
@@ -331,12 +486,9 @@ export class VideoComponent implements OnInit, OnDestroy {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 
-  onEnter(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.checkAnswer(); }
-  }
-
   ngOnDestroy() {
-    if (this.tracker) clearInterval(this.tracker);
-    if (this.player) { try { this.player.destroy(); } catch {} }
+    if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
+    if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
+    window.removeEventListener('scroll', this.onScroll);
   }
 }

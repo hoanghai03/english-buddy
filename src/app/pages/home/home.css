@@ -125,8 +125,12 @@
   white-space: nowrap;
 }
 
-.lang-switcher { display: flex; gap: 4px; }
-.lang-btn {
+/* Language dropdown */
+.lang-switcher-wrap { position: relative; }
+.lang-current-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   padding: 5px 10px;
   border: 1.5px solid var(--cream-edge);
   border-radius: var(--r-pill);
@@ -136,14 +140,123 @@
   background: transparent;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.12s;
+  transition: border-color 0.12s;
+  white-space: nowrap;
 }
-.lang-btn:hover { border-color: var(--ink); }
-.lang-btn.active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #FFFAF1;
+.lang-current-btn:hover { border-color: var(--ink); }
+.lang-caret { opacity: 0.5; flex-shrink: 0; }
+.lang-dd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
 }
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--r-md, 12px);
+  box-shadow: var(--sh-3);
+  overflow: hidden;
+  z-index: 200;
+  min-width: 130px;
+}
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ink-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+.lang-option:hover { background: var(--paper-2); }
+.lang-option.active { color: var(--ink); background: var(--paper-2); }
+
+/* User dropdown */
+.nav-user-wrap { position: relative; }
+.nav-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--r-pill);
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.nav-user-btn:hover { background: var(--paper-2); }
+.nav-user-btn .nav-username {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-dd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--r-md, 12px);
+  box-shadow: var(--sh-3);
+  overflow: hidden;
+  z-index: 200;
+  min-width: 140px;
+}
+.user-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ink-2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.1s;
+}
+.user-dd-item:hover { background: var(--paper-2); }
+.user-dd-divider { height: 1px; background: var(--cream-edge); margin: 2px 0; }
+.user-dd-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+.user-dd-logout:hover { background: #fef2f2; }
 
 .btn-ghost {
   padding: 8px 16px;
@@ -260,7 +373,34 @@
 
 .nav-drawer-bottom {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.drawer-lang-row {
+  display: flex;
+  gap: 4px;
   flex-wrap: wrap;
+}
+.lang-btn {
+  padding: 5px 10px;
+  border: 1.5px solid var(--cream-edge);
+  border-radius: var(--r-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.lang-btn:hover { border-color: var(--ink); }
+.lang-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #FFFAF1;
+}
+.drawer-user-row {
+  display: flex;
   align-items: center;
   gap: 8px;
 }
@@ -1084,7 +1224,9 @@
 ════════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .nav-wrap { padding: 0 16px; top: 8px; }
-  .nav { padding: 12px 20px; border-radius: 20px; }
+  .nav { padding: 12px 20px; border-radius: 20px; flex-wrap: wrap; align-items: center; }
+  .nav.menu-open { border-radius: 16px; }
+  .nav-logo { flex: 1; }
   .nav-links { display: none; }
   .hamburger { display: flex; }
   .nav-right { display: none; }

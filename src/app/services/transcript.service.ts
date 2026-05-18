@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { TranscriptLine } from '../models/lesson.model';
 import { environment } from '../../environments/environment';
@@ -12,14 +12,42 @@ export class TranscriptService {
   private http = inject(HttpClient);
   private cache = new Map<string, TranscriptLine[]>();
 
-  fetch(videoId: string): Observable<TranscriptLine[]> {
-    if (this.cache.has(videoId)) return of(this.cache.get(videoId)!);
-    return this.tryGet(videoId, 'en').pipe(
-      map(en => {
-        const lines = this.merge(en, null);
-        this.cache.set(videoId, lines);
-        return lines;
+  fetch(videoId: string, videoLang = 'en'): Observable<TranscriptLine[]> {
+    const key = `${videoId}:${videoLang}`;
+    if (this.cache.has(key)) return of(this.cache.get(key)!);
+
+    // Fetch EN (manual → ASR fallback) and VI (manual only) in parallel
+    return forkJoin([
+      this.tryGet(videoId, 'en'),
+      this.ytGet(videoId, 'vi'),
+    ]).pipe(
+      switchMap(([enData, viData]) => {
+        const lines = this.merge(enData, viData);
+        if (lines.length) {
+          this.cache.set(key, lines);
+          return of(lines);
+        }
+        // English failed — try video's native language with translation to EN
+        if (videoLang && videoLang !== 'en') {
+          return this.tryGetTranslated(videoId, videoLang).pipe(
+            map(l => { this.cache.set(key, l); return l; })
+          );
+        }
+        this.cache.set(key, []);
+        return of([]);
       })
+    );
+  }
+
+  // Thử lấy caption ngôn ngữ gốc của video rồi dịch sang tiếng Anh qua tlang=en
+  private tryGetTranslated(videoId: string, srcLang: string): Observable<TranscriptLine[]> {
+    return this.ytGet(videoId, srcLang, undefined, 'en').pipe(
+      switchMap((res: any) => {
+        if (!res) return of(null);
+        if (res.events?.length) return of(res);
+        return this.ytGet(videoId, srcLang, 'asr', 'en');
+      }),
+      map(data => this.merge(data, null))
     );
   }
 
@@ -65,11 +93,15 @@ export class TranscriptService {
   private merge(enData: any, viData: any): TranscriptLine[] {
     const en = this.parseEvents(enData);
     const vi = this.parseEvents(viData);
-    return en.map((line, i) => ({
-      start: line.start,
-      end: line.end,
-      en: line.text,
-      vi: vi[i]?.text ?? '',
-    }));
+    return en.map(enLine => {
+      // Match by time overlap instead of index (EN and VI may have different segment counts)
+      const match = vi.find(v => v.start < enLine.end && v.end > enLine.start);
+      return {
+        start: enLine.start,
+        end: enLine.end,
+        en: enLine.text,
+        vi: match?.text ?? '',
+      };
+    });
   }
 }
