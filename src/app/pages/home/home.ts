@@ -4,10 +4,11 @@ import { CharacterService } from '../../services/character.service';
 import { LanguageService } from '../../services/language.service';
 import { AuthService } from '../../services/auth.service';
 import { AdBannerComponent } from '../../shared/ad-banner';
+import { BuddyOwlComponent } from '../../shared/buddy-owl';
 
 @Component({
   selector: 'app-home',
-  imports: [AdBannerComponent, RouterLink],
+  imports: [AdBannerComponent, RouterLink, BuddyOwlComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -34,7 +35,15 @@ export class HomeComponent {
   previews = this.characterService.characters.slice(0, 4);
   menuOpen = signal(false);
 
-  start() { this.router.navigate(['/video']); }
-  goVideo() { this.router.navigate(['/video']); }
+  getGreeting(char: { flag?: string }): string {
+    const f = char.flag ?? '';
+    if (f.includes('🇯🇵')) return 'こんにちは 🌸';
+    if (f.includes('🇨🇳') || f.includes('🇹🇼')) return '你好 ✨';
+    if (f.includes('🇰🇷')) return '안녕하세요 👋';
+    return 'Hello 👋';
+  }
+
+  start()  { this.router.navigate(['/video']); }
+  goVideo(){ this.router.navigate(['/video']); }
   goTo(route: string) { this.router.navigate([route]); }
 }

@@ -1,136 +1,161 @@
 <div class="landing">
 
   <!-- SIDEBAR ADS -->
-  <div class="ad-sidebar ad-left">
-    <app-ad-banner [vertical]="true" />
-  </div>
-  <div class="ad-sidebar ad-right">
-    <app-ad-banner [vertical]="true" />
-  </div>
+  <div class="ad-sidebar ad-left"><app-ad-banner [vertical]="true" /></div>
+  <div class="ad-sidebar ad-right"><app-ad-banner [vertical]="true" /></div>
 
-  <!-- NAV -->
-  <nav class="nav" [class.menu-open]="menuOpen()">
-    <a class="nav-logo" routerLink="/">
-      <svg width="32" height="32" viewBox="50 50 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect x="50" y="50" width="160" height="160" rx="36" fill="#1E40AF"/>
-        <path d="M95 80L95 170L170 170" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="170" cy="170" r="9" fill="#FBBF24"/>
-      </svg>
-      <span>Luyện Ngoại Ngữ</span>
-    </a>
+  <!-- ════════ NAV ════════ -->
+  <div class="nav-wrap">
+    <nav class="nav" [class.menu-open]="menuOpen()">
+      <a class="nav-logo" routerLink="/">
+        <app-buddy-owl [size]="38" />
+        <span class="nav-wordmark">Luyện Ngoại Ngữ<span class="nav-dot">.</span></span>
+      </a>
 
-    <!-- Desktop nav links -->
-    <div class="nav-links">
-      <a routerLink="/" class="nav-link">Trang chủ</a>
-      <a routerLink="/video" class="nav-link">Học qua Video</a>
-      <a routerLink="/audio" class="nav-link">Luyện nghe</a>
-      <a routerLink="/messages" class="nav-link">Chat AI</a>
-      <a routerLink="/call" class="nav-link">Luyện nói</a>
-    </div>
-
-    <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-
-    <div class="nav-menu">
-      <!-- Mobile-only nav links -->
-      <div class="nav-links-mobile">
-        <a routerLink="/" class="nav-link-m" (click)="menuOpen.set(false)">🏠 Trang chủ</a>
-        <a routerLink="/video" class="nav-link-m" (click)="menuOpen.set(false)">🎬 Học qua Video</a>
-        <a routerLink="/audio" class="nav-link-m" (click)="menuOpen.set(false)">🎧 Luyện nghe</a>
-        <a routerLink="/messages" class="nav-link-m" (click)="menuOpen.set(false)">💬 Chat AI</a>
-        <a routerLink="/call" class="nav-link-m" (click)="menuOpen.set(false)">📞 Luyện nói</a>
+      <div class="nav-links">
+        <a routerLink="/" class="nav-link">Trang chủ</a>
+        <a routerLink="/video" class="nav-link">Học qua Video</a>
+        <a routerLink="/audio" class="nav-link">Luyện nghe</a>
+        <a routerLink="/messages" class="nav-link">Chat AI</a>
+        <a routerLink="/call" class="nav-link">Luyện nói</a>
       </div>
-      <div class="lang-switcher">
-        @for (l of lang.langs; track l.code) {
-          <button
-            class="lang-btn"
-            [class.active]="lang.current() === l.code"
-            (click)="lang.set(l.code); menuOpen.set(false)"
-            [title]="l.label"
-          >
-            {{ l.flag }} {{ l.code.toUpperCase() }}
-          </button>
-        }
-      </div>
-      <div class="nav-actions">
-        <button class="nav-cta" (click)="start(); menuOpen.set(false)">{{ lang.t('nav_cta') }}</button>
+
+      <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-right">
+        <span class="streak-chip">🔥 7 ngày</span>
+        <div class="lang-switcher">
+          @for (l of lang.langs; track l.code) {
+            <button class="lang-btn" [class.active]="lang.current() === l.code" (click)="lang.set(l.code)" [title]="l.label">
+              {{ l.flag }} {{ l.code.toUpperCase() }}
+            </button>
+          }
+        </div>
         @if (auth.isLoggedIn()) {
           <div class="nav-user">
             <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
             <span class="nav-username">{{ auth.currentUser()!.username }}</span>
             @if (auth.isAdmin()) {
-              <a class="nav-admin" routerLink="/admin">Admin</a>
+              <a class="nav-admin-pill" routerLink="/admin">Admin</a>
             }
-            <button class="nav-logout" (click)="auth.logout()">Đăng xuất</button>
+            <button class="btn-ghost-sm" (click)="auth.logout()">Đăng xuất</button>
           </div>
         } @else {
-          <a class="nav-login" routerLink="/login" (click)="menuOpen.set(false)">Đăng nhập</a>
+          <a class="btn-ghost" routerLink="/login">Đăng nhập</a>
+          <button class="btn-honey" (click)="start()">Bắt đầu miễn phí →</button>
         }
       </div>
-    </div>
-  </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <!-- Decorative background blobs -->
-    <div class="hero-bg">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-    </div>
-
-    <div class="hero-content">
-      <div class="hero-badge">{{ lang.t('hero_badge') }}</div>
-      <h1 class="hero-title">
-        {{ lang.t('hero_title1') }}<br>
-        <span class="gradient-text">{{ lang.t('hero_title2') }}</span>
-      </h1>
-      <p class="hero-sub">
-        {{ lang.t('hero_sub1') }}<br>
-        {{ lang.t('hero_sub2') }}
-      </p>
-      <div class="hero-actions">
-        <button class="btn-primary" (click)="start()">{{ lang.t('btn_start') }}</button>
-        @if (auth.isLoggedIn()) {
-          <span class="hero-note">Xin chào, {{ auth.currentUser()!.username }}! 👋</span>
-        } @else {
-          <div class="hero-auth-links">
-            <a routerLink="/register" class="btn-register">Tạo tài khoản miễn phí</a>
-            <span class="hero-auth-sep">hoặc</span>
-            <a routerLink="/login" class="btn-login-text">Đăng nhập</a>
+      <!-- Mobile drawer -->
+      <div class="nav-drawer">
+        <div class="nav-links-mobile">
+          <a routerLink="/" class="nav-link-m" (click)="menuOpen.set(false)">🏠 Trang chủ</a>
+          <a routerLink="/video" class="nav-link-m" (click)="menuOpen.set(false)">🎬 Học qua Video</a>
+          <a routerLink="/audio" class="nav-link-m" (click)="menuOpen.set(false)">🎧 Luyện nghe</a>
+          <a routerLink="/messages" class="nav-link-m" (click)="menuOpen.set(false)">💬 Chat AI</a>
+          <a routerLink="/call" class="nav-link-m" (click)="menuOpen.set(false)">📞 Luyện nói</a>
+        </div>
+        <div class="nav-drawer-bottom">
+          <div class="lang-switcher">
+            @for (l of lang.langs; track l.code) {
+              <button class="lang-btn" [class.active]="lang.current() === l.code" (click)="lang.set(l.code); menuOpen.set(false)" [title]="l.label">
+                {{ l.flag }} {{ l.code.toUpperCase() }}
+              </button>
+            }
           </div>
-        }
-      </div>
-      <div class="hero-trust">
-        <span class="trust-item">✅ Miễn phí 100%</span>
-        <span class="trust-item">🔒 Không cần thẻ tín dụng</span>
-        <span class="trust-item">⚡ Bắt đầu ngay lập tức</span>
-      </div>
-    </div>
-
-    <!-- Floating character cards + greeting badges -->
-    <div class="hero-visual">
-      <div class="greeting-badge gb-top">Hello 👋</div>
-      <div class="greeting-badge gb-right">こんにちは 🇯🇵</div>
-      <div class="greeting-badge gb-bottom">你好 🇨🇳</div>
-      <div class="hero-cards">
-        @for (char of previews; track char.id) {
-          <div class="float-card" (click)="start()">
-            <img [src]="char.avatar" [alt]="char.name" />
-            <div class="float-card-info">
-              <div class="float-name">{{ char.name }}</div>
-              <div class="float-job">{{ char.flag }} {{ char.location }}</div>
+          @if (auth.isLoggedIn()) {
+            <div class="nav-user">
+              <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
+              <span>{{ auth.currentUser()!.username }}</span>
+              <button class="btn-ghost-sm" (click)="auth.logout(); menuOpen.set(false)">Đăng xuất</button>
             </div>
-            <span class="online-dot"></span>
+          } @else {
+            <a routerLink="/login" class="btn-ghost" (click)="menuOpen.set(false)">Đăng nhập</a>
+            <button class="btn-honey" (click)="start(); menuOpen.set(false)">Bắt đầu →</button>
+          }
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ════════ HERO ════════ -->
+  <section class="hero">
+    <div class="hero-dots" aria-hidden="true"></div>
+    <div class="hero-grid">
+
+      <!-- LEFT -->
+      <div class="hero-left">
+        <span class="hero-badge">🎬 Học qua Video &amp; Luyện nghe chép</span>
+        <h1 class="hero-title">
+          Học ngoại ngữ qua<br>
+          <span class="hero-highlight">Video yêu thích</span>
+        </h1>
+        <p class="hero-sub">
+          Xem YouTube với transcript song ngữ theo thời gian thực.<br>
+          Luyện nghe chép từng câu — cải thiện chính xác mỗi ngày.
+        </p>
+        <div class="hero-ctas">
+          <button class="btn-primary btn-lg" (click)="start()">🎬 Bắt đầu học Video</button>
+          @if (auth.isLoggedIn()) {
+            <span class="hero-welcome">Xin chào, {{ auth.currentUser()!.username }}! 👋</span>
+          } @else {
+            <div class="hero-auth">
+              <button class="btn-honey" (click)="goTo('/register')">Tạo tài khoản miễn phí</button>
+              <span class="auth-sep">hoặc</span>
+              <a routerLink="/login" class="btn-login-text">Đăng nhập</a>
+            </div>
+          }
+        </div>
+        <div class="trust-row">
+          <span class="trust-pill">✅ Miễn phí 100%</span>
+          <span class="trust-pill">🔒 Không cần thẻ tín dụng</span>
+          <span class="trust-pill">⚡ Bắt đầu ngay lập tức</span>
+        </div>
+      </div>
+
+      <!-- RIGHT — mascot + floating elements -->
+      <div class="hero-right">
+        <!-- Big owl circle -->
+        <div class="owl-circle-wrap">
+          <div class="owl-float-anim">
+            <app-buddy-owl [size]="220" />
           </div>
+        </div>
+
+        <!-- Floating chat cards from character data -->
+        @for (char of previews; track char.id; let i = $index) {
+          @if (i < 3) {
+            <div class="chat-card" [class]="'cc-pos-' + (i + 1)">
+              <div class="cc-lang">{{ char.name }} · {{ char.flag }}</div>
+              <div class="cc-greet">{{ getGreeting(char) }}</div>
+            </div>
+          }
         }
+
+        <!-- XP progress bar card -->
+        <div class="xp-card">
+          <div class="xp-row">
+            <span class="xp-label">LEVEL 12 · Intermediate</span>
+            <span class="xp-pts">780/1000</span>
+          </div>
+          <div class="xp-track">
+            <div class="xp-fill"></div>
+          </div>
+        </div>
+
+        <!-- Streak sticker -->
+        <div class="streak-sticker" aria-hidden="true">
+          <span>🔥</span>
+          <span class="sticker-xp">+240 XP</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- STATS -->
-  <section class="stats">
+  <!-- ════════ STATS BAR ════════ -->
+  <section class="stats-bar">
     @for (s of stats(); track s.label) {
       <div class="stat-item">
         <div class="stat-value">{{ s.value }}</div>
@@ -139,17 +164,17 @@
     }
   </section>
 
-  <!-- FEATURES -->
+  <!-- ════════ FEATURES ════════ -->
   <section class="features">
     <span class="section-badge">Tính năng nổi bật</span>
-    <h2 class="section-title">{{ lang.t('features_title') }}</h2>
+    <h2 class="section-title">
+      Tại sao sinh viên thích <span class="buddy-sticker">Buddy</span>?
+    </h2>
     <p class="section-sub">Tất cả những gì bạn cần để luyện ngoại ngữ thật sự hiệu quả</p>
     <div class="feature-grid">
-      @for (f of features(); track f.title) {
+      @for (f of features(); track f.title; let i = $index) {
         <div class="feature-card" (click)="goTo(f.route)">
-          <div class="feature-icon-wrap">
-            <div class="feature-icon">{{ f.icon }}</div>
-          </div>
+          <div class="feature-icon-tile" [class]="'feat-tint-' + i">{{ f.icon }}</div>
           <div class="feature-title">{{ f.title }}</div>
           <div class="feature-desc">{{ f.desc }}</div>
           <div class="feature-arrow">→</div>
@@ -158,46 +183,60 @@
     </div>
   </section>
 
-  <!-- STEPS SECTION -->
+  <!-- ════════ STEPS ════════ -->
   <section class="steps-section">
     <div class="steps-inner">
       <span class="section-badge">Phương pháp học</span>
-      <h2 class="section-title">6 bước để thành thạo ngoại ngữ</h2>
+      <h2 class="section-title">
+        6 bước để thành thạo <span class="coral-sticker">ngoại ngữ</span>
+      </h2>
       <p class="section-sub">Từ con số 0 đến giao tiếp tự tin với lộ trình được thiết kế khoa học</p>
       <div class="steps-grid">
-        <div class="step-card sc-blue">
-          <div class="step-num">01</div>
-          <div class="step-icon">🎭</div>
+        <div class="step-card s-forest">
+          <div class="step-header">
+            <span class="step-chip sc-forest">BƯỚC 01</span>
+            <span class="step-emoji">🎭</span>
+          </div>
           <div class="step-title">Chọn nhân vật AI</div>
           <div class="step-desc">Tìm người bạn AI phù hợp với phong cách và mục tiêu học của bạn</div>
         </div>
-        <div class="step-card sc-purple">
-          <div class="step-num">02</div>
-          <div class="step-icon">💬</div>
+        <div class="step-card s-honey">
+          <div class="step-header">
+            <span class="step-chip sc-honey">BƯỚC 02</span>
+            <span class="step-emoji">💬</span>
+          </div>
           <div class="step-title">Luyện hội thoại</div>
           <div class="step-desc">Chat hoặc gọi điện để rèn kỹ năng nói hoàn toàn tự nhiên</div>
         </div>
-        <div class="step-card sc-amber">
-          <div class="step-num">03</div>
-          <div class="step-icon">🎬</div>
+        <div class="step-card s-coral">
+          <div class="step-header">
+            <span class="step-chip sc-coral">BƯỚC 03</span>
+            <span class="step-emoji">🎬</span>
+          </div>
           <div class="step-title">Học qua Video</div>
           <div class="step-desc">Xem video YouTube với transcript song ngữ theo thời gian thực</div>
         </div>
-        <div class="step-card sc-green">
-          <div class="step-num">04</div>
-          <div class="step-icon">🎧</div>
+        <div class="step-card s-forest">
+          <div class="step-header">
+            <span class="step-chip sc-forest">BƯỚC 04</span>
+            <span class="step-emoji">🎧</span>
+          </div>
           <div class="step-title">Luyện nghe chép</div>
           <div class="step-desc">Nghe câu và chép lại — cải thiện tai nghe và chính tả từng ngày</div>
         </div>
-        <div class="step-card sc-rose">
-          <div class="step-num">05</div>
-          <div class="step-icon">📈</div>
+        <div class="step-card s-honey">
+          <div class="step-header">
+            <span class="step-chip sc-honey">BƯỚC 05</span>
+            <span class="step-emoji">📈</span>
+          </div>
           <div class="step-title">Theo dõi tiến độ</div>
           <div class="step-desc">Thấy rõ sự tiến bộ qua từng ngày luyện tập không ngừng</div>
         </div>
-        <div class="step-card sc-indigo">
-          <div class="step-num">06</div>
-          <div class="step-icon">🏆</div>
+        <div class="step-card s-coral">
+          <div class="step-header">
+            <span class="step-chip sc-coral">BƯỚC 06</span>
+            <span class="step-emoji">🏆</span>
+          </div>
           <div class="step-title">Đạt mục tiêu</div>
           <div class="step-desc">Giao tiếp tự tin và tự nhiên như người bản ngữ thực thụ</div>
         </div>
@@ -205,61 +244,68 @@
     </div>
   </section>
 
-  <!-- AD BANNER -->
-  <section class="ad-section">
-    <app-ad-banner />
-  </section>
+  <!-- AD -->
+  <section class="ad-section"><app-ad-banner /></section>
 
-  <!-- VIDEO CTA BANNER -->
-  <section class="video-banner">
-    <div class="video-banner-inner">
-      <div class="video-banner-icon">🎬</div>
-      <div class="video-banner-text">
-        <div class="video-banner-tag">{{ lang.t('video_tag') }}</div>
-        <h2>{{ lang.t('video_h2') }}</h2>
-        <p>{{ lang.t('video_p') }}</p>
+  <!-- ════════ VIDEO BANNER ════════ -->
+  <section class="vb-section">
+    <div class="vb-wrap">
+      <div class="vb-card">
+        <div class="vb-filmstrip" aria-hidden="true"></div>
+        <div class="vb-icon-tile">🎬</div>
+        <div class="vb-text">
+          <span class="vb-tag">✨ Tính năng mới</span>
+          <h2 class="vb-title">{{ lang.t('video_h2') }}</h2>
+          <p class="vb-desc">{{ lang.t('video_p') }}</p>
+        </div>
+        <button class="btn-honey vb-btn" (click)="goVideo()">🎬 Thử ngay</button>
       </div>
-      <button class="btn-video" (click)="goVideo()">{{ lang.t('btn_video') }}</button>
     </div>
   </section>
 
-  <!-- FINAL CTA -->
+  <!-- ════════ FINAL CTA ════════ -->
   <section class="cta-section">
-    <div class="cta-inner">
-      <div class="cta-emoji">🚀</div>
-      <h2>{{ lang.t('cta_h2') }}</h2>
-      <p>{{ lang.t('cta_p') }}</p>
-      <button class="btn-primary large" (click)="start()">{{ lang.t('btn_messages') }}</button>
+    <div class="cta-card">
+      <div class="cta-owl-deco cta-owl-l" aria-hidden="true">
+        <app-buddy-owl [size]="100" [blink]="false" />
+      </div>
+      <div class="cta-owl-deco cta-owl-r" aria-hidden="true">
+        <app-buddy-owl [size]="100" [blink]="false" />
+      </div>
+      <div class="cta-owl-main">
+        <div class="cta-bobby">
+          <app-buddy-owl [size]="110" />
+        </div>
+      </div>
+      <h2 class="cta-title">
+        Sẵn sàng nói tiếng Anh<br>
+        <span class="cta-highlight">tự tin hơn?</span>
+      </h2>
+      <p class="cta-sub">Chọn một người bạn AI và bắt đầu cuộc trò chuyện đầu tiên ngay hôm nay.</p>
+      <button class="cta-main-btn" (click)="start()">💬 Mở Messages</button>
       <div class="cta-note">Miễn phí · Không cần đăng ký · Bắt đầu trong 30 giây</div>
     </div>
   </section>
 
-  <!-- FOOTER -->
+  <!-- ════════ FOOTER ════════ -->
   <footer class="footer">
     <div class="footer-top">
       <div class="footer-brand">
         <a class="footer-logo" routerLink="/">
-          <svg width="28" height="28" viewBox="50 50 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <rect x="50" y="50" width="160" height="160" rx="36" fill="#1E40AF"/>
-            <path d="M95 80L95 170L170 170" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="170" cy="170" r="9" fill="#FBBF24"/>
-          </svg>
-          <span>Luyện Ngoại Ngữ</span>
+          <app-buddy-owl [size]="36" />
+          <span class="footer-wordmark">Luyện Ngoại Ngữ<span class="footer-dot">.</span></span>
         </a>
-        <p class="footer-tagline">Học tiếng Anh, Nhật, Trung qua hội thoại AI.<br>Miễn phí — không áp lực — tiến bộ thật sự.</p>
+        <p class="footer-tagline">
+          Học tiếng Anh, Nhật, Trung qua hội thoại AI.<br>
+          Miễn phí — không áp lực — tiến bộ thật sự.
+        </p>
         <div class="footer-socials">
-          <a class="social-btn" href="#" aria-label="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-          </a>
-          <a class="social-btn" href="#" aria-label="TikTok">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.76a4.85 4.85 0 0 1-1-.07z"/></svg>
-          </a>
-          <a class="social-btn" href="mailto:support@lnng.app" aria-label="Email">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
-          </a>
+          <a class="social-tile" href="#" aria-label="Facebook">F</a>
+          <a class="social-tile" href="#" aria-label="TikTok">T</a>
+          <a class="social-tile" href="mailto:support@lnng.app" aria-label="Email">@</a>
         </div>
       </div>
-      <div class="footer-links-group">
+      <div class="footer-cols">
         <div class="footer-col">
           <h4>Tính năng</h4>
           <a routerLink="/messages">💬 Chat AI</a>
@@ -281,7 +327,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2024 Luyện Ngoại Ngữ · Made with ❤️ for students</span>
+      © 2024 Luyện Ngoại Ngữ · Made with ❤️ for students
     </div>
   </footer>
 

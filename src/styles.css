@@ -1,3 +1,76 @@
+/* ══════════════════════════════════════════
+   DESIGN TOKENS — Buddy the Owl palette
+══════════════════════════════════════════ */
+:root {
+  --paper:        #FFFAF1;
+  --paper-2:      #FFF4DE;
+  --cream-edge:   #F5E6CC;
+  --ink:          #1C1917;
+  --ink-2:        #44403C;
+  --ink-3:        #78716C;
+  --ink-4:        #A8A29E;
+  --forest:       #166534;
+  --forest-deep:  #052e16;
+  --honey:        #F59E0B;
+  --honey-50:     #FFEDD5;
+  --honey-ink:    #422006;
+  --coral:        #FB7185;
+  --coral-50:     #FECDD3;
+  --mint-50:      #D1FAE5;
+
+  /* Shadows — neo-brutalist offset */
+  --sh-1: 2px 2px 0 #1C1917;
+  --sh-2: 3px 3px 0 #1C1917;
+  --sh-3: 4px 4px 0 #1C1917;
+  --sh-4: 5px 5px 0 #1C1917;
+  --sh-5: 6px 6px 0 #1C1917;
+  --sh-6: 8px 8px 0 #1C1917;
+  --sh-honey: 5px 5px 0 #F59E0B;
+  --sh-coral: 4px 4px 0 #FB7185;
+
+  /* Radii */
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-xl:   22px;
+  --r-2xl:  28px;
+  --r-3xl:  32px;
+  --r-pill: 999px;
+
+  /* Typography */
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* CEFR levels */
+  --cefr-a1: #166534; --cefr-a1-bg: #D1FAE5; --cefr-a1-fg: #166534;
+  --cefr-a2: #0891b2; --cefr-a2-bg: #cffafe; --cefr-a2-fg: #0e7490;
+  --cefr-b1: #F59E0B; --cefr-b1-bg: #FEF3C7; --cefr-b1-fg: #9A3412;
+  --cefr-b2: #7c3aed; --cefr-b2-bg: #ede9fe; --cefr-b2-fg: #6d28d9;
+  --cefr-c1: #FB7185; --cefr-c1-bg: #FECDD3; --cefr-c1-fg: #9F1239;
+  --cefr-c2: #be185d; --cefr-c2-bg: #FECDD3; --cefr-c2-fg: #9F1239;
+}
+
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes buddy-bobby {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes buddy-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.1); }
+}
+
+@keyframes buddy-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-4deg); }
+  75%      { transform: rotate(4deg); }
+}
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -6,15 +79,15 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Nunito', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #EFF6FF;
-  color: #0F172A;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
 
 a { text-decoration: none; color: inherit; }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #bbb; }
+::-webkit-scrollbar-thumb { background: #E7D9BF; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #D6C9A8; }
