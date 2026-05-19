@@ -142,6 +142,7 @@ export class AudioComponent implements OnDestroy {
   revealed = signal(false);
   wordResults = signal<WordResult[]>([]);
   hint = signal<string | null>(null);
+  hintWordIndex = signal<number>(-1);
   score = computed(() => {
     const r = this.wordResults();
     if (!r.length) return 0;
@@ -273,12 +274,15 @@ export class AudioComponent implements OnDestroy {
       // Complete and fully correct
       this.checked.set(true);
       this.hint.set(null);
+      this.hintWordIndex.set(-1);
       this.celebrate();
     } else if (firstWrongIdx === -1) {
-      // Partially typed, all correct so far → hint next word
+      // Partially typed, all correct so far → hint next word only
+      this.hintWordIndex.set(typed.length);
       this.hint.set(`💡 Từ tiếp theo: "${rawExpected[typed.length]}"`);
     } else {
-      // Wrong word found → hint that word and move cursor there
+      // Wrong word found → hint that word only, hide the rest
+      this.hintWordIndex.set(firstWrongIdx);
       this.hint.set(`📍 Sửa từ thứ ${firstWrongIdx + 1}: "${rawExpected[firstWrongIdx]}"`);
       this.moveCursorToWord(firstWrongIdx);
     }
@@ -355,6 +359,7 @@ export class AudioComponent implements OnDestroy {
     this.revealed.set(false);
     this.wordResults.set([]);
     this.hint.set(null);
+    this.hintWordIndex.set(-1);
     window.speechSynthesis.cancel();
     this.speaking.set(false);
   }

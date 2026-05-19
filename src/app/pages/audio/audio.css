@@ -712,9 +712,10 @@
   font-weight: 600;
 }
 
-.wchip.correct  { background: #d1fae5; color: #065f46; }
-.wchip.wrong    { background: #fee2e2; color: #991b1b; }
-.wchip.pending  { background: #f3f4f6; color: #9ca3af; filter: blur(5px); user-select: none; }
+.wchip.correct   { background: #d1fae5; color: #065f46; }
+.wchip.wrong     { background: #fee2e2; color: #991b1b; }
+.wchip.pending   { background: #f3f4f6; color: #9ca3af; }
+.wchip.hint-only { background: #fef9c3; color: #713f12; border: 1.5px dashed #ca8a04; }
 
 .hint-msg {
   margin-top: 10px;

@@ -2045,7 +2045,8 @@
   padding: 7px 12px;
 }
 
-.wchip.pending { background: #f1f5f9; color: #64748b; }
+.wchip.pending   { background: #f1f5f9; color: #64748b; }
+.wchip.hint-only { background: #fef9c3; color: #713f12; border: 1.5px dashed #ca8a04; }
 
 @keyframes import-center-in {
   from { opacity: 0; transform: translate(-50%, -54%) scale(0.95); }

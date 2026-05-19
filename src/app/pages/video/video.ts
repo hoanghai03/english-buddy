@@ -149,6 +149,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   revealed = signal(false);
   wordResults = signal<WordResult[]>([]);
   hint = signal<string | null>(null);
+  hintWordIndex = signal<number>(-1);
   score = computed(() => {
     const r = this.wordResults();
     if (!r.length) return 0;
@@ -314,6 +315,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   async loadNavPanel(nav: string) {
+    if (this.activeLesson()) this.closePlayer();
     this.activeNav.set(nav);
     if (!this.isLoggedIn()) return;
     if (nav === 'saved' && !this.savedVideos().length) {
@@ -515,9 +517,12 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (firstWrongIdx === -1 && typed.length >= expected.length) {
       this.checked.set(true);
       this.hint.set(null);
+      this.hintWordIndex.set(-1);
     } else if (firstWrongIdx === -1) {
+      this.hintWordIndex.set(typed.length);
       this.hint.set(`💡 Từ tiếp theo: "${rawExpected[typed.length]}"`);
     } else {
+      this.hintWordIndex.set(firstWrongIdx);
       this.hint.set(`📍 Sửa từ thứ ${firstWrongIdx + 1}: "${rawExpected[firstWrongIdx]}"`);
       this.moveCursorToWord(firstWrongIdx);
     }
@@ -602,6 +607,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.revealed.set(false);
     this.wordResults.set([]);
     this.hint.set(null);
+    this.hintWordIndex.set(-1);
   }
 
   onImportBtnClick() {

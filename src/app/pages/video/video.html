@@ -467,7 +467,10 @@
 
         </div>
 
-        <!-- ── SAVED VIDEOS VIEW ── -->
+      }
+      <!-- ── END VIDEOS SELECTION VIEW ── -->
+
+      <!-- ── SAVED VIDEOS VIEW ── -->
         @if (activeNav() === 'saved' && !activeLesson()) {
           <div class="panel-view">
             <div class="panel-view-header">
@@ -587,7 +590,6 @@
           </div>
         }
 
-      }
       <!-- ── END SELECTION VIEW ── -->
 
       <!-- ── PLAYER VIEW — sidebar vẫn hiển thị ── -->
@@ -751,8 +753,10 @@
                           <div class="result-score" [ngClass]="score() >= 80 ? 'good' : score() >= 50 ? 'ok' : 'bad'">{{ score() }}% đúng</div>
                         }
                         <div class="word-result-list">
-                          @for (r of wordResults(); track $index) {
-                            <span class="wchip" [ngClass]="r.correct ? 'correct' : (r.typed ? 'wrong' : 'pending')">{{ r.word }}@if (!r.correct && r.typed) {<span class="wtyped">({{ r.typed }})</span>}</span>
+                          @for (r of wordResults(); track $index; let i = $index) {
+                            @if (hintWordIndex() < 0 || i <= hintWordIndex()) {
+                              <span class="wchip" [ngClass]="[r.correct ? 'correct' : (r.typed ? 'wrong' : 'pending'), i === hintWordIndex() && !r.correct ? 'hint-only' : '']">{{ r.word }}@if (!r.correct && r.typed && i <= hintWordIndex()) {<span class="wtyped">({{ r.typed }})</span>}</span>
+                            }
                           }
                         </div>
                         @if (hint()) {
