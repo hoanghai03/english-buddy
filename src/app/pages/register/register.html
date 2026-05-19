@@ -1,114 +1,131 @@
 <div class="auth-page">
+  <div class="auth-bg-dots" aria-hidden="true"></div>
 
-  <!-- Left panel: branding -->
-  <div class="auth-panel">
-    <a class="auth-panel-logo" routerLink="/">
-      <img src="owl-logo.svg" width="36" height="36" alt="" style="display:block">
-      <span>Luyện Ngoại Ngữ</span>
+  <!-- ── Mini nav ── -->
+  <header class="auth-nav">
+    <a class="auth-nav-logo" routerLink="/">
+      <app-buddy-owl [size]="32" [blink]="false" />
+      <span>Luyện Ngoại Ngữ<span class="nav-dot">.</span></span>
     </a>
-    <div class="auth-panel-body">
-      <h2>Bắt đầu hành trình ngôn ngữ! 🚀</h2>
-      <p>Tạo tài khoản miễn phí và bắt đầu luyện tập ngay hôm nay.</p>
-      <ul class="panel-features">
-        <li><span class="pf-icon">🎭</span> 8+ nhân vật AI để luyện tập</li>
-        <li><span class="pf-icon">🌍</span> Tiếng Anh, Nhật, Trung Quốc</li>
-        <li><span class="pf-icon">🆓</span> Hoàn toàn miễn phí, không thẻ tín dụng</li>
-        <li><span class="pf-icon">⚡</span> Bắt đầu trong vòng 30 giây</li>
-      </ul>
-    </div>
-    <div class="auth-panel-footer">Đã có hơn 1,000+ sinh viên tin dùng</div>
-  </div>
+    <a class="auth-nav-back" routerLink="/">← Trang chủ</a>
+  </header>
 
-  <!-- Right panel: form -->
-  <div class="auth-form-side">
+  <!-- ── Card ── -->
+  <main class="auth-main">
     <div class="auth-card">
-      <a class="auth-logo-mobile" routerLink="/">
-        <img src="owl-logo.svg" width="26" height="26" alt="" style="display:block">
-        Luyện Ngoại Ngữ
-      </a>
 
-      <h1 class="auth-title">Tạo tài khoản</h1>
-      <p class="auth-sub">Miễn phí · Không cần thẻ tín dụng</p>
-
-      @if (error()) {
-        <div class="auth-error">{{ error() }}</div>
-      }
-
-      <form (ngSubmit)="submit()">
-        <div class="field">
-          <label for="username">Tên hiển thị</label>
-          <input
-            id="username" type="text" name="username"
-            [(ngModel)]="username"
-            placeholder="Nguyễn Văn A"
-            autocomplete="name"
-            required
-          />
-        </div>
-
-        <div class="field">
-          <label for="email">Email</label>
-          <input
-            id="email" type="email" name="email"
-            [(ngModel)]="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            required
-          />
-        </div>
-
-        <div class="field">
-          <label for="password">Mật khẩu</label>
-          <div class="input-wrap">
-            <input
-              id="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              name="password"
-              [(ngModel)]="password"
-              placeholder="Ít nhất 8 ký tự, có chữ hoa và số"
-              autocomplete="new-password"
-              required
-            />
-            <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())">
-              {{ showPassword() ? '🙈' : '👁' }}
-            </button>
+      <!-- LEFT PANEL -->
+      <div class="auth-panel">
+        <div class="auth-panel-owl">
+          <div class="auth-owl-float">
+            <app-buddy-owl [size]="130" [blink]="true" />
           </div>
         </div>
-
-        <div class="field">
-          <label for="confirm">Xác nhận mật khẩu</label>
-          <div class="input-wrap">
-            <input
-              id="confirm"
-              [type]="showPassword() ? 'text' : 'password'"
-              name="confirm"
-              [(ngModel)]="confirmPassword"
-              placeholder="Nhập lại mật khẩu"
-              autocomplete="new-password"
-              required
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          class="btn-primary"
-          [disabled]="loading() || !username || !email || !password || !confirmPassword"
-        >
-          @if (loading()) { <span class="spinner"></span> } Tạo tài khoản miễn phí
-        </button>
-      </form>
-
-      <div class="divider"><span>hoặc đăng ký với</span></div>
-
-      <div class="oauth-group">
-        <div #googleBtn class="google-btn-wrap"></div>
+        <h2 class="panel-title">Bắt đầu<br>hành trình! 🚀</h2>
+        <p class="panel-sub">Tạo tài khoản miễn phí và luyện ngôn ngữ mỗi ngày cùng Buddy.</p>
+        <ul class="panel-features">
+          <li><span class="pf-chip">🆓</span> Hoàn toàn miễn phí</li>
+          <li><span class="pf-chip">⚡</span> Bắt đầu trong 30 giây</li>
+          <li><span class="pf-chip">🌍</span> Tiếng Anh, Nhật, Trung</li>
+          <li><span class="pf-chip">🔒</span> Không cần thẻ tín dụng</li>
+        </ul>
+        <div class="panel-badge">Đã có hơn 1,000+ sinh viên tin dùng</div>
       </div>
 
-      <p class="auth-link">
-        Đã có tài khoản? <a routerLink="/login">Đăng nhập</a>
-      </p>
-    </div>
-  </div>
+      <!-- RIGHT FORM -->
+      <div class="auth-form">
+        <div class="form-header">
+          <h1 class="auth-title">Tạo tài khoản</h1>
+          <p class="auth-sub">Miễn phí · Không cần thẻ tín dụng · Bắt đầu ngay</p>
+        </div>
 
+        @if (error()) {
+          <div class="auth-error">⚠️ {{ error() }}</div>
+        }
+
+        <form (ngSubmit)="submit()" class="auth-form-body">
+          <div class="field">
+            <label for="username">Tên hiển thị</label>
+            <input
+              id="username" type="text" name="username"
+              [(ngModel)]="username"
+              placeholder="Nguyễn Văn A"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              id="email" type="email" name="email"
+              [(ngModel)]="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="password">Mật khẩu</label>
+              <div class="input-wrap">
+                <input
+                  id="password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  name="password"
+                  [(ngModel)]="password"
+                  placeholder="Ít nhất 8 ký tự"
+                  autocomplete="new-password"
+                  required
+                />
+                <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
+                  {{ showPassword() ? '🙈' : '👁' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="confirm">Xác nhận mật khẩu</label>
+              <div class="input-wrap">
+                <input
+                  id="confirm"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  name="confirm"
+                  [(ngModel)]="confirmPassword"
+                  placeholder="Nhập lại mật khẩu"
+                  autocomplete="new-password"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="password-hint">
+            Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.
+          </div>
+
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="loading() || !username || !email || !password || !confirmPassword"
+          >
+            @if (loading()) { <span class="spinner"></span> }
+            Tạo tài khoản miễn phí →
+          </button>
+        </form>
+
+        <div class="auth-divider"><span>hoặc đăng ký với</span></div>
+
+        <div class="oauth-group">
+          <div #googleBtn class="google-btn-wrap"></div>
+        </div>
+
+        <p class="auth-switch">
+          Đã có tài khoản? <a routerLink="/login">Đăng nhập →</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
 </div>

@@ -1,84 +1,95 @@
 <div class="auth-page">
+  <div class="auth-bg-dots" aria-hidden="true"></div>
 
-  <!-- Left panel: branding -->
-  <div class="auth-panel">
-    <a class="auth-panel-logo" routerLink="/">
-      <img src="owl-logo.svg" width="36" height="36" alt="" style="display:block">
-      <span>Luyện Ngoại Ngữ</span>
+  <!-- ── Mini nav ── -->
+  <header class="auth-nav">
+    <a class="auth-nav-logo" routerLink="/">
+      <app-buddy-owl [size]="32" [blink]="false" />
+      <span>Luyện Ngoại Ngữ<span class="nav-dot">.</span></span>
     </a>
-    <div class="auth-panel-body">
-      <h2>Chào mừng trở lại! 👋</h2>
-      <p>Tiếp tục hành trình chinh phục ngoại ngữ cùng người bạn AI của bạn.</p>
-      <ul class="panel-features">
-        <li><span class="pf-icon">💬</span> Chat tự nhiên với AI người bản ngữ</li>
-        <li><span class="pf-icon">📞</span> Luyện nói qua gọi điện AI</li>
-        <li><span class="pf-icon">🎬</span> Học qua video YouTube yêu thích</li>
-        <li><span class="pf-icon">🎧</span> Luyện nghe chép chính tả</li>
-      </ul>
-    </div>
-    <div class="auth-panel-footer">Miễn phí · Không áp lực · Tiến bộ thật sự</div>
-  </div>
+    <a class="auth-nav-back" routerLink="/">← Trang chủ</a>
+  </header>
 
-  <!-- Right panel: form -->
-  <div class="auth-form-side">
+  <!-- ── Card ── -->
+  <main class="auth-main">
     <div class="auth-card">
-      <a class="auth-logo-mobile" routerLink="/">
-        <img src="owl-logo.svg" width="26" height="26" alt="" style="display:block">
-        Luyện Ngoại Ngữ
-      </a>
 
-      <h1 class="auth-title">Đăng nhập</h1>
-      <p class="auth-sub">Nhập thông tin tài khoản của bạn để tiếp tục</p>
-
-      @if (error()) {
-        <div class="auth-error">{{ error() }}</div>
-      }
-
-      <form (ngSubmit)="submit()" #f="ngForm">
-        <div class="field">
-          <label for="email">Email</label>
-          <input
-            id="email" type="email" name="email"
-            [(ngModel)]="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            required
-          />
-        </div>
-
-        <div class="field">
-          <label for="password">Mật khẩu</label>
-          <div class="input-wrap">
-            <input
-              id="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              name="password"
-              [(ngModel)]="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              required
-            />
-            <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())">
-              {{ showPassword() ? '🙈' : '👁' }}
-            </button>
+      <!-- LEFT PANEL -->
+      <div class="auth-panel">
+        <div class="auth-panel-owl">
+          <div class="auth-owl-float">
+            <app-buddy-owl [size]="130" [blink]="true" />
           </div>
         </div>
-
-        <button type="submit" class="btn-primary" [disabled]="loading()">
-          @if (loading()) { <span class="spinner"></span> } Đăng nhập
-        </button>
-      </form>
-
-      <div class="divider"><span>hoặc đăng nhập với</span></div>
-
-      <div class="oauth-group">
-        <div #googleBtn class="google-btn-wrap"></div>
+        <h2 class="panel-title">Chào mừng<br>trở lại! 👋</h2>
+        <p class="panel-sub">Tiếp tục hành trình chinh phục ngoại ngữ cùng Buddy.</p>
+        <ul class="panel-features">
+          <li><span class="pf-chip">🎬</span> Học qua Video YouTube</li>
+          <li><span class="pf-chip">🎧</span> Luyện nghe chép chính tả</li>
+          <li><span class="pf-chip">💬</span> Chat AI bản ngữ</li>
+          <li><span class="pf-chip">📞</span> Gọi điện luyện nói</li>
+        </ul>
+        <div class="panel-badge">✅ Miễn phí · Không áp lực · Tiến bộ thật sự</div>
       </div>
 
-      <p class="auth-link">
-        Chưa có tài khoản? <a routerLink="/register">Đăng ký ngay</a>
-      </p>
-    </div>
-  </div>
+      <!-- RIGHT FORM -->
+      <div class="auth-form">
+        <div class="form-header">
+          <h1 class="auth-title">Đăng nhập</h1>
+          <p class="auth-sub">Nhập thông tin tài khoản của bạn để tiếp tục</p>
+        </div>
 
+        @if (error()) {
+          <div class="auth-error">⚠️ {{ error() }}</div>
+        }
+
+        <form (ngSubmit)="submit()" #f="ngForm" class="auth-form-body">
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              id="email" type="email" name="email"
+              [(ngModel)]="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+            <div class="input-wrap">
+              <input
+                id="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                name="password"
+                [(ngModel)]="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
+                {{ showPassword() ? '🙈' : '👁' }}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="loading()">
+            @if (loading()) { <span class="spinner"></span> }
+            Đăng nhập →
+          </button>
+        </form>
+
+        <div class="auth-divider"><span>hoặc đăng nhập với</span></div>
+
+        <div class="oauth-group">
+          <div #googleBtn class="google-btn-wrap"></div>
+        </div>
+
+        <p class="auth-switch">
+          Chưa có tài khoản? <a routerLink="/register">Đăng ký ngay →</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
 </div>

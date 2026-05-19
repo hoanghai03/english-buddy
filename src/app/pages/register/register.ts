@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ViewChild, ElementRef, inject, signal } from 
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { BuddyOwlComponent } from '../../shared/buddy-owl';
 import { environment } from '../../../environments/environment';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,7 +10,7 @@ const w = window as any;
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, BuddyOwlComponent],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })

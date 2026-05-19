@@ -1,0 +1,169 @@
+<div class="cs-page">
+
+  <!-- ════════ NAV ════════ -->
+  <div class="nav-wrap">
+    <nav class="nav" [class.menu-open]="menuOpen()">
+      <a class="nav-logo" routerLink="/">
+        <app-buddy-owl [size]="38" />
+        <span class="nav-wordmark">Luyện Ngoại Ngữ<span class="nav-dot">.</span></span>
+      </a>
+
+      <div class="nav-links">
+        <a routerLink="/" class="nav-link">Trang chủ</a>
+        <a routerLink="/video" class="nav-link">Học qua Video</a>
+        <a routerLink="/audio" class="nav-link">Luyện nghe</a>
+        <a routerLink="/messages" class="nav-link">Chat AI</a>
+        <a routerLink="/call" class="nav-link">Luyện nói</a>
+      </div>
+
+      <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-right">
+        @if (auth.isLoggedIn()) {
+          <div class="nav-user-wrap">
+            <button class="nav-user-btn" (click)="userDropdownOpen.set(!userDropdownOpen())">
+              <span class="nav-username">{{ auth.currentUser()!.username }}</span>
+              <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
+            </button>
+            @if (userDropdownOpen()) {
+              <div class="user-dd-backdrop" (click)="userDropdownOpen.set(false)"></div>
+              <div class="user-dropdown">
+                @if (auth.isAdmin()) {
+                  <a class="user-dd-item" routerLink="/admin" (click)="userDropdownOpen.set(false)">Admin</a>
+                  <div class="user-dd-divider"></div>
+                }
+                <button class="user-dd-logout" (click)="auth.logout(); userDropdownOpen.set(false)">Đăng xuất</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <a class="btn-ghost" routerLink="/login">Đăng nhập</a>
+          <a class="btn-honey" routerLink="/register">Bắt đầu miễn phí →</a>
+        }
+      </div>
+
+      <!-- Mobile drawer -->
+      <div class="nav-drawer">
+        <div class="nav-links-mobile">
+          <a routerLink="/" class="nav-link-m" (click)="menuOpen.set(false)">🏠 Trang chủ</a>
+          <a routerLink="/video" class="nav-link-m" (click)="menuOpen.set(false)">🎬 Học qua Video</a>
+          <a routerLink="/audio" class="nav-link-m" (click)="menuOpen.set(false)">🎧 Luyện nghe</a>
+          <a routerLink="/messages" class="nav-link-m" (click)="menuOpen.set(false)">💬 Chat AI</a>
+          <a routerLink="/call" class="nav-link-m" (click)="menuOpen.set(false)">📞 Luyện nói</a>
+        </div>
+        <div class="nav-drawer-bottom">
+          @if (auth.isLoggedIn()) {
+            <div class="drawer-user-row">
+              <div class="nav-avatar">{{ auth.currentUser()!.username[0].toUpperCase() }}</div>
+              <span class="nav-username">{{ auth.currentUser()!.username }}</span>
+              <button class="btn-ghost-sm" (click)="auth.logout(); menuOpen.set(false)">Đăng xuất</button>
+            </div>
+          } @else {
+            <a routerLink="/login" class="btn-ghost" (click)="menuOpen.set(false)">Đăng nhập</a>
+            <a routerLink="/register" class="btn-honey" (click)="menuOpen.set(false)">Bắt đầu →</a>
+          }
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ════════ MAIN ════════ -->
+  <main class="cs-main">
+
+    <!-- Decoration dots -->
+    <div class="cs-dots" aria-hidden="true"></div>
+
+    <div class="cs-card">
+
+      <!-- Mascot -->
+      <div class="cs-owl-wrap">
+        <div class="cs-owl-float">
+          <app-buddy-owl [size]="150" [blink]="true" />
+        </div>
+        <div class="cs-tools" aria-hidden="true">
+          <span class="cs-tool ct-1">🔨</span>
+          <span class="cs-tool ct-2">⚙️</span>
+          <span class="cs-tool ct-3">✨</span>
+        </div>
+      </div>
+
+      <!-- Badge -->
+      <div class="cs-badge">
+        <span class="cs-badge-dot"></span>
+        Đang phát triển
+      </div>
+
+      <!-- Heading -->
+      <h1 class="cs-title">
+        {{ feature().icon }} {{ feature().name }}
+        <span class="cs-title-block">sắp ra mắt</span>
+      </h1>
+
+      <p class="cs-desc">{{ feature().desc }}</p>
+
+      <!-- ETA card -->
+      <div class="cs-eta-row">
+        <div class="cs-eta-card">
+          <div class="cs-eta-label">Dự kiến ra mắt</div>
+          <div class="cs-eta-value">{{ feature().eta }}</div>
+        </div>
+        <div class="cs-eta-card">
+          <div class="cs-eta-label">Trạng thái</div>
+          <div class="cs-eta-value cs-status">Đang xây dựng 🏗️</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="cs-progress-wrap">
+        <div class="cs-progress-label">
+          <span>Tiến độ phát triển</span>
+          <span class="cs-progress-pct">35%</span>
+        </div>
+        <div class="cs-progress-track">
+          <div class="cs-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="cs-divider">
+        <span>Trong lúc đó, hãy thử</span>
+      </div>
+
+      <!-- Alt feature buttons -->
+      <div class="cs-alt-row">
+        <button class="cs-alt-btn cs-alt-video" (click)="goVideo()">
+          <span class="cs-alt-icon">🎬</span>
+          <div>
+            <div class="cs-alt-name">Học qua Video</div>
+            <div class="cs-alt-sub">YouTube + transcript song ngữ</div>
+          </div>
+          <span class="cs-alt-arrow">→</span>
+        </button>
+        @if (currentPath() !== '/audio') {
+          <button class="cs-alt-btn cs-alt-audio" (click)="goAudio()">
+            <span class="cs-alt-icon">🎧</span>
+            <div>
+              <div class="cs-alt-name">Luyện nghe chép</div>
+              <div class="cs-alt-sub">Nghe và chép lại từng câu</div>
+            </div>
+            <span class="cs-alt-arrow">→</span>
+          </button>
+        }
+      </div>
+
+      <button class="cs-back-btn" (click)="goHome()">← Về trang chủ</button>
+    </div>
+  </main>
+
+  <!-- ════════ FOOTER ════════ -->
+  <footer class="cs-footer">
+    <a class="cs-footer-logo" routerLink="/">
+      <app-buddy-owl [size]="28" [blink]="false" />
+      <span>Luyện Ngoại Ngữ<span class="nav-dot">.</span></span>
+    </a>
+    <span class="cs-footer-copy">© 2024 · Miễn phí · Made with ❤️ for students</span>
+  </footer>
+
+</div>

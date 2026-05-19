@@ -1,13 +1,17 @@
 import {
-  Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, signal, computed, inject, NgZone
+  Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild, signal, computed, inject, NgZone, effect
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgClass } from '@angular/common';
+import { NgClass, DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { LessonService } from '../../services/lesson.service';
 import { TranscriptService } from '../../services/transcript.service';
 import { AuthService } from '../../services/auth.service';
+import { StreakService, StreakDto } from '../../services/streak.service';
+import { SavedVideoService, SavedVideoDto } from '../../services/saved-video.service';
+import { WatchHistoryService, WatchHistoryDto } from '../../services/watch-history.service';
+import { VocabCardService, VocabCardDto } from '../../services/vocab-card.service';
 import { VideoLesson, TranscriptLine, WordResult } from '../../models/lesson.model';
 
 declare const YT: any;
@@ -41,7 +45,7 @@ const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').tri
 
 @Component({
   selector: 'app-video',
-  imports: [FormsModule, NgClass, RouterLink],
+  imports: [FormsModule, NgClass, RouterLink, DatePipe],
   templateUrl: './video.html',
   styleUrl: './video.css',
 })
@@ -53,6 +57,10 @@ export class VideoComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private zone = inject(NgZone);
   private authService = inject(AuthService);
+  private streakService = inject(StreakService);
+  private savedVideoService = inject(SavedVideoService);
+  private watchHistoryService = inject(WatchHistoryService);
+  private vocabCardService = inject(VocabCardService);
 
   readonly isLoggedIn = this.authService.isLoggedIn;
   readonly currentUser = this.authService.currentUser;
@@ -175,6 +183,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   private player: any = null;
   private tracker: any = null;
+  private positionSaver: any = null;
   private pauseAt: number | null = null;
   private lastScrollY = 0;
   private readonly onScroll = () => {
@@ -187,21 +196,43 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.lastScrollY = y;
   };
 
-  readonly streakDays = [
-    { label: 'Th2', filled: true },
-    { label: 'Th3', filled: true },
-    { label: 'Th4', filled: true },
+  // Streak (real data)
+  streakData = signal<StreakDto | null>(null);
+  streakDays = signal<{ label: string; filled: boolean }[]>([
+    { label: 'Th2', filled: false },
+    { label: 'Th3', filled: false },
+    { label: 'Th4', filled: false },
     { label: 'Th5', filled: false },
     { label: 'Th6', filled: false },
     { label: 'Th7', filled: false },
     { label: 'CN', filled: false },
-  ];
+  ]);
+
+  // Saved / history / vocab panels
+  savedVideos = signal<SavedVideoDto[]>([]);
+  savedVideosLoading = signal(false);
+  watchHistory = signal<WatchHistoryDto[]>([]);
+  watchHistoryLoading = signal(false);
+  vocabCards = signal<VocabCardDto[]>([]);
+  vocabCardsLoading = signal(false);
+
+  // Current lesson saved status
+  currentLessonIsSaved = signal(false);
+
+  // Right-click context menu for vocab
+  contextMenuVisible = signal(false);
+  contextMenuX = signal(0);
+  contextMenuY = signal(0);
+  contextMenuWord = signal('');
+  contextMenuTranslation = signal('');
+  contextMenuTranslating = signal(false);
+  contextMenuSaved = signal(false);
 
   readonly learningLangs = [
-    { code: 'JA', flag: '🇯🇵' },
-    { code: 'EN', flag: '🇺🇸' },
-    { code: 'ZH-CN', flag: '🇨🇳' },
-    { code: 'KO', flag: '🇰🇷' },
+    { code: 'JA', flag: '🇯🇵', apiLang: 'ja' },
+    { code: 'EN', flag: '🇺🇸', apiLang: 'en' },
+    { code: 'ZH-CN', flag: '🇨🇳', apiLang: 'zh-hans' },
+    { code: 'KO', flag: '🇰🇷', apiLang: 'ko' },
   ];
 
   readonly categories = [
@@ -232,6 +263,9 @@ export class VideoComponent implements OnInit, OnDestroy {
   ngOnInit() {
     void this.lessonService.loadLessons();
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    if (this.isLoggedIn()) {
+      void this.loadStreakAndCheckIn();
+    }
     (window as any)['onYouTubeIframeAPIReady'] = () => {
       this.zone.run(() => {
         if (this.activeLesson()) this.createPlayer();
@@ -245,15 +279,122 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   closePlayer() {
+    if (this.positionSaver) { clearInterval(this.positionSaver); this.positionSaver = null; }
     if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
     if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
     this.activeLesson.set(null);
+    this.currentLessonIsSaved.set(false);
+    this.hideContextMenu();
+  }
+
+  async loadStreakAndCheckIn() {
+    try {
+      const streak = await this.streakService.checkIn();
+      this.streakData.set(streak);
+      this.updateStreakDays(streak.currentStreak);
+    } catch {}
+  }
+
+  private updateStreakDays(currentStreak: number) {
+    const today = new Date();
+    const dow = today.getDay(); // 0=Sun
+    const days = ['CN', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7'];
+    const labels = ['Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'CN'];
+    const todayIdx = labels.indexOf(days[dow]);
+    this.streakDays.set(labels.map((label, i) => ({
+      label,
+      filled: currentStreak > 0 && i <= todayIdx && i >= todayIdx - (currentStreak - 1),
+    })));
+  }
+
+  setActiveLang(code: string) {
+    this.activeLang.set(code);
+    const apiLang = this.learningLangs.find(l => l.code === code)?.apiLang ?? undefined;
+    void this.lessonService.loadLessons(undefined, apiLang);
+  }
+
+  async loadNavPanel(nav: string) {
+    this.activeNav.set(nav);
+    if (!this.isLoggedIn()) return;
+    if (nav === 'saved' && !this.savedVideos().length) {
+      this.savedVideosLoading.set(true);
+      try { this.savedVideos.set(await this.savedVideoService.getSaved()); } catch {}
+      this.savedVideosLoading.set(false);
+    }
+    if (nav === 'history' && !this.watchHistory().length) {
+      this.watchHistoryLoading.set(true);
+      try { this.watchHistory.set(await this.watchHistoryService.getHistory()); } catch {}
+      this.watchHistoryLoading.set(false);
+    }
+    if (nav === 'vocab' && !this.vocabCards().length) {
+      this.vocabCardsLoading.set(true);
+      try { this.vocabCards.set(await this.vocabCardService.getCards()); } catch {}
+      this.vocabCardsLoading.set(false);
+    }
+  }
+
+  async toggleSaveLesson() {
+    const lesson = this.activeLesson();
+    if (!lesson || !this.isLoggedIn()) return;
+    if (this.currentLessonIsSaved()) {
+      await this.savedVideoService.unsave(lesson.id);
+      this.currentLessonIsSaved.set(false);
+      this.savedVideos.update(list => list.filter(s => s.lesson.id !== lesson.id));
+    } else {
+      await this.savedVideoService.save(lesson.id);
+      this.currentLessonIsSaved.set(true);
+      this.savedVideos.set([]);
+    }
+  }
+
+  async deleteVocabCard(id: string) {
+    await this.vocabCardService.deleteCard(id);
+    this.vocabCards.update(list => list.filter(c => c.id !== id));
+  }
+
+  async onTranscriptContextMenu(event: MouseEvent, lineText: string) {
+    const selection = window.getSelection()?.toString().trim();
+    const word = selection || lineText;
+    if (!word) return;
+    event.preventDefault();
+    this.contextMenuX.set(event.clientX);
+    this.contextMenuY.set(event.clientY);
+    this.contextMenuWord.set(word);
+    this.contextMenuTranslation.set('');
+    this.contextMenuSaved.set(false);
+    this.contextMenuVisible.set(true);
+    this.contextMenuTranslating.set(true);
+    try {
+      const translation = await this.vocabCardService.translate(word);
+      this.contextMenuTranslation.set(translation);
+    } catch {}
+    this.contextMenuTranslating.set(false);
+  }
+
+  hideContextMenu() {
+    this.contextMenuVisible.set(false);
+    this.contextMenuSaved.set(false);
+  }
+
+  async saveWordFromContext() {
+    if (!this.isLoggedIn()) return;
+    const lesson = this.activeLesson();
+    await this.vocabCardService.saveCard(
+      this.contextMenuWord(),
+      this.contextMenuTranslation(),
+      null,
+      lesson?.id ?? null
+    );
+    this.contextMenuSaved.set(true);
+    this.vocabCards.set([]);
   }
 
   async selectLesson(lesson: VideoLesson) {
     // Always destroy the old player — its iframe is removed when activeLesson changes
+    if (this.positionSaver) { clearInterval(this.positionSaver); this.positionSaver = null; }
     if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
     if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
+    this.hideContextMenu();
 
     this.activeLesson.set(lesson);
     this.dictIndex.set(0);
@@ -274,10 +415,20 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Check saved status + load watch position
+    if (this.isLoggedIn()) {
+      void this.savedVideoService.isSaved(lesson.id).then(r => this.currentLessonIsSaved.set(r.saved)).catch(() => {});
+      void this.watchHistoryService.getPosition(lesson.id).then(p => {
+        if (p && p.positionSeconds > 0) this._resumePosition = p.positionSeconds;
+      });
+    }
+
     setTimeout(() => {
       if ((window as any).YT?.Player) this.createPlayer();
     }, 150);
   }
+
+  private _resumePosition: number | null = null;
 
   private createPlayer() {
     const lesson = this.activeLesson();
@@ -291,6 +442,11 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   private startTracking() {
     if (this.tracker) clearInterval(this.tracker);
+    // Seek to saved position if available
+    if (this._resumePosition !== null && this._resumePosition > 0) {
+      this.player?.seekTo(this._resumePosition, true);
+      this._resumePosition = null;
+    }
     this.tracker = setInterval(() => {
       this.zone.run(() => {
         if (!this.player?.getCurrentTime) return;
@@ -303,6 +459,20 @@ export class VideoComponent implements OnInit, OnDestroy {
         }
       });
     }, 300);
+
+    // Save watch position every 10s
+    if (this.isLoggedIn() && this.positionSaver) clearInterval(this.positionSaver);
+    if (this.isLoggedIn()) {
+      this.positionSaver = setInterval(() => {
+        const lesson = this.activeLesson();
+        if (!lesson || !this.player?.getCurrentTime) return;
+        const pos: number = this.player.getCurrentTime();
+        if (pos > 2) {
+          void this.watchHistoryService.savePosition(lesson.id, pos)
+            .then(() => this.watchHistory.set([]));
+        }
+      }, 10000);
+    }
   }
 
   seekTo(line: TranscriptLine) {
@@ -364,6 +534,16 @@ export class VideoComponent implements OnInit, OnDestroy {
         el.setSelectionRange(match.index, match.index + match[0].length);
       }
     });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    if (this.contextMenuVisible()) {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.vocab-context-menu')) {
+        this.hideContextMenu();
+      }
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -465,7 +645,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         this.importError.set('Video không có phụ đề tiếng Anh. Hãy kiểm tra video có bật CC không.');
         return;
       }
-      const lesson = await this.lessonService.importYouTube(this.importUrl, lines);
+      const lesson = await this.lessonService.importYouTube(this.importUrl, lines, this.importVideoLang);
       this.importing.set(false);
       this.importUrl = '';
       this.importPanelOpen.set(false);
@@ -475,6 +655,8 @@ export class VideoComponent implements OnInit, OnDestroy {
       this.importError.set('Không thể nhập video. Vui lòng thử lại.');
     }
   }
+
+  readonly Math = Math;
 
   setMode(m: Mode) { this.mode.set(m); this.resetDictation(); }
   setLang(l: Lang) { this.lang.set(l); }
@@ -487,6 +669,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.positionSaver) { clearInterval(this.positionSaver); this.positionSaver = null; }
     if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
     if (this.player) { try { this.player.destroy(); } catch {} this.player = null; }
     window.removeEventListener('scroll', this.onScroll);

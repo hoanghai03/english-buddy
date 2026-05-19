@@ -14,6 +14,7 @@ export interface VideoLesson {
   description: string;
   level: VideoLevel;
   topic: string;
+  lang: string;
   transcript: TranscriptLine[];
 }
 

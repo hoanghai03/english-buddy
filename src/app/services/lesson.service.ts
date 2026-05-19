@@ -11,6 +11,7 @@ interface ApiVideoLessonSummary {
   description: string;
   level: string;
   topic: string;
+  lang: string;
   transcriptCount: number;
 }
 
@@ -27,13 +28,15 @@ export class LessonService {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  async loadLessons(level?: string): Promise<void> {
+  async loadLessons(level?: string, lang?: string): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const url = level
-        ? `${environment.apiUrl}/video-lessons?level=${level}`
-        : `${environment.apiUrl}/video-lessons`;
+      const params = new URLSearchParams();
+      if (level) params.set('level', level);
+      if (lang) params.set('lang', lang);
+      const qs = params.toString();
+      const url = qs ? `${environment.apiUrl}/video-lessons?${qs}` : `${environment.apiUrl}/video-lessons`;
       const lessons = await firstValueFrom(this.http.get<ApiVideoLessonSummary[]>(url));
       this._lessons.set(lessons.map(l => this.mapLesson(l, [])));
     } catch {
@@ -56,12 +59,13 @@ export class LessonService {
     }
   }
 
-  async importYouTube(url: string, lines?: TranscriptLine[]): Promise<VideoLesson> {
+  async importYouTube(url: string, lines?: TranscriptLine[], lang = 'en'): Promise<VideoLesson> {
     const lesson = await firstValueFrom(
       this.http.post<ApiVideoLessonDetail>(`${environment.apiUrl}/video-lessons/import-youtube`, {
         url,
         level: 'B1',
         topic: 'Custom',
+        lang,
         lines: lines ?? null,
       })
     );
@@ -88,6 +92,7 @@ export class LessonService {
       description: lesson.description,
       level: lesson.level as VideoLesson['level'],
       topic: lesson.topic,
+      lang: lesson.lang ?? 'en',
       transcript: [...transcript].sort((a, b) => a.start - b.start),
     };
   }
