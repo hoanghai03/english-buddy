@@ -692,6 +692,60 @@
                 <span [class]="'pmeta-badge ' + lesson.level.toLowerCase()">{{ lesson.level }}</span>
                 <span class="pmeta-title">{{ lesson.title }}</span>
               </div>
+
+              <!-- Comments section -->
+              <div class="player-comments">
+                <div class="comments-header">
+                  <span class="comments-title">💬 Bình luận</span>
+                  @if (comments().length) {
+                    <span class="comments-count">{{ comments().length }}</span>
+                  }
+                </div>
+
+                @if (isLoggedIn()) {
+                  <div class="comment-compose">
+                    <div class="comment-avatar-sm">{{ currentUser()!.username[0].toUpperCase() }}</div>
+                    <div class="comment-compose-right">
+                      <textarea class="comment-textarea" [(ngModel)]="newCommentText" placeholder="Nhập bình luận..." rows="2"></textarea>
+                      <button class="comment-submit-btn" (click)="submitComment()" [disabled]="!newCommentText.trim() || submittingComment()">
+                        @if (submittingComment()) { Đang gửi... } @else { Gửi }
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="comments-login-hint">
+                    <a routerLink="/login">Đăng nhập</a> để bình luận
+                  </div>
+                }
+
+                @if (commentsLoading()) {
+                  <div class="comments-loading"><div class="ts-spinner"></div></div>
+                } @else if (!comments().length) {
+                  <div class="comments-empty">Chưa có bình luận nào. Hãy là người đầu tiên!</div>
+                } @else {
+                  <div class="comments-list">
+                    @for (c of comments(); track c.id) {
+                      <div class="comment-item">
+                        <div class="comment-avatar">{{ c.username[0].toUpperCase() }}</div>
+                        <div class="comment-body">
+                          <div class="comment-meta-row">
+                            <span class="comment-username">{{ c.username }}</span>
+                            <span class="comment-date">{{ c.createdAt | date:'dd/MM/yyyy' }}</span>
+                          </div>
+                          <div class="comment-content">{{ c.content }}</div>
+                          <div class="comment-footer">
+                            <button class="comment-react-btn" [class.reacted]="c.myReaction === true" (click)="reactComment(c.id, 'Like')">👍 {{ c.likeCount }}</button>
+                            <button class="comment-react-btn" [class.reacted]="c.myReaction === false" (click)="reactComment(c.id, 'Dislike')">👎 {{ c.dislikeCount }}</button>
+                            @if (c.username === currentUser()?.username) {
+                              <button class="comment-delete-btn" (click)="deleteComment(c.id)">Xóa</button>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             </div>
 
             <!-- Panel col -->
@@ -746,7 +800,43 @@
                     <div class="dict-instructions">📌 Nghe câu rồi gõ lại chính xác. Không phân biệt hoa thường, bỏ qua dấu câu.</div>
                     <button class="play-sentence-btn" (click)="playSentence()">🔊 Nghe câu này</button>
                     @if (revealed()) {
-                      <div class="revealed-box"><div class="revealed-label">✅ Đáp án:</div><div class="revealed-text">{{ currentLine?.en }}</div></div>
+                      <div class="revealed-box">
+                        <div class="revealed-label-row">
+                          <span class="revealed-label">✅ Đáp án:</span>
+                          <button class="hide-reveal-btn" (click)="revealed.set(false)">🙈 Ẩn đáp án</button>
+                        </div>
+                        <div class="revealed-text">{{ currentLine?.en }}</div>
+                        <button class="analysis-toggle-btn" (click)="loadSentenceAnalysis()" [disabled]="analysisLoading()">
+                          @if (analysisLoading()) {
+                            <span class="analysis-spinner"></span> Đang dịch...
+                          } @else {
+                            🔍 Xem dịch nghĩa
+                          }
+                        </button>
+                        @if (showAnalysis() && analysisData()) {
+                          <div class="analysis-panel">
+                            <div class="analysis-section">
+                              <div class="analysis-label">🇻🇳 Dịch nghĩa</div>
+                              <div class="analysis-content">{{ analysisData()!.translation }}</div>
+                            </div>
+                            @if (analysisData()!.grammar) {
+                              <div class="analysis-section">
+                                <div class="analysis-label">📖 Phân tích ngữ pháp</div>
+                                <div class="analysis-content">{{ analysisData()!.grammar }}</div>
+                              </div>
+                            }
+                            @if (analysisData()!.examples.length) {
+                              <div class="analysis-section">
+                                <div class="analysis-label">💡 Ví dụ liên quan</div>
+                                @for (ex of analysisData()!.examples; track $index) {
+                                  <div class="analysis-example">• {{ ex }}</div>
+                                }
+                              </div>
+                            }
+                            <button class="analysis-close-btn" (click)="showAnalysis.set(false)">✕ Ẩn</button>
+                          </div>
+                        }
+                      </div>
                     } @else if (wordResults().length > 0) {
                       <div class="result-box">
                         @if (checked()) {
@@ -767,15 +857,15 @@
                     <textarea #dictInput class="dict-input" [(ngModel)]="inputText" [disabled]="checked()" [placeholder]="'Gõ những gì bạn nghe được... (' + displayKey(keyConfig().check) + ' để kiểm tra)'" rows="3"></textarea>
                     <div class="dict-actions">
                       <button class="dict-btn nav" (click)="prev()" [disabled]="dictIndex() === 0">◀ Trước</button>
-                      @if (!checked()) {
+                      @if (!checked() && !revealed()) {
                         <button class="dict-btn check" (click)="checkAnswer()" [disabled]="!inputText.trim()">✓ Kiểm tra</button>
-                      } @else if (!revealed()) {
+                      }
+                      @if (!revealed()) {
                         <button class="dict-btn reveal" (click)="reveal()">👁 Hiện đáp án</button>
+                      }
+                      @if (checked() || revealed()) {
                         <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">Tiếp ▶</button>
                       } @else {
-                        <button class="dict-btn next" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">Tiếp ▶</button>
-                      }
-                      @if (!checked()) {
                         <button class="dict-btn nav" (click)="next()" [disabled]="dictIndex() === currentTranscript().length - 1">Bỏ qua ▶</button>
                       }
                     </div>

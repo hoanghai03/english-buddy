@@ -12,6 +12,8 @@ import { StreakService, StreakDto } from '../../services/streak.service';
 import { SavedVideoService, SavedVideoDto } from '../../services/saved-video.service';
 import { WatchHistoryService, WatchHistoryDto } from '../../services/watch-history.service';
 import { VocabCardService, VocabCardDto } from '../../services/vocab-card.service';
+import { CommentService, CommentDto } from '../../services/comment.service';
+import { SentenceAnalysisService, SentenceAnalysis } from '../../services/sentence-analysis.service';
 import { VideoLesson, TranscriptLine, WordResult } from '../../models/lesson.model';
 
 declare const YT: any;
@@ -61,6 +63,8 @@ export class VideoComponent implements OnInit, OnDestroy {
   private savedVideoService = inject(SavedVideoService);
   private watchHistoryService = inject(WatchHistoryService);
   private vocabCardService = inject(VocabCardService);
+  private commentService = inject(CommentService);
+  private analysisService = inject(SentenceAnalysisService);
 
   readonly isLoggedIn = this.authService.isLoggedIn;
   readonly currentUser = this.authService.currentUser;
@@ -220,6 +224,17 @@ export class VideoComponent implements OnInit, OnDestroy {
   // Current lesson saved status
   currentLessonIsSaved = signal(false);
 
+  // Comments
+  comments = signal<CommentDto[]>([]);
+  commentsLoading = signal(false);
+  newCommentText = '';
+  submittingComment = signal(false);
+
+  // Sentence analysis
+  showAnalysis = signal(false);
+  analysisLoading = signal(false);
+  analysisData = signal<SentenceAnalysis | null>(null);
+
   // Right-click context menu for vocab
   contextMenuVisible = signal(false);
   contextMenuX = signal(0);
@@ -285,6 +300,9 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (this.tracker) { clearInterval(this.tracker); this.tracker = null; }
     this.activeLesson.set(null);
     this.currentLessonIsSaved.set(false);
+    this.comments.set([]);
+    this.showAnalysis.set(false);
+    this.analysisData.set(null);
     this.hideContextMenu();
   }
 
@@ -404,6 +422,8 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.resetDictation();
     this.currentTranscript.set([]);
     this.transcriptError.set('');
+    this.comments.set([]);
+    void this.loadComments(lesson.id);
     this.transcriptLoading.set(true);
 
     const detail = lesson.transcript.length ? lesson : await this.lessonService.loadLessonDetail(lesson.id);
@@ -608,6 +628,8 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.wordResults.set([]);
     this.hint.set(null);
     this.hintWordIndex.set(-1);
+    this.showAnalysis.set(false);
+    this.analysisData.set(null);
   }
 
   onImportBtnClick() {
@@ -667,6 +689,67 @@ export class VideoComponent implements OnInit, OnDestroy {
   setMode(m: Mode) { this.mode.set(m); this.resetDictation(); }
   setLang(l: Lang) { this.lang.set(l); }
   goBack() { this.router.navigate(['/']); }
+
+  async loadComments(lessonId: string) {
+    this.commentsLoading.set(true);
+    try {
+      const list = await firstValueFrom(this.commentService.getComments(lessonId));
+      this.comments.set(list);
+    } catch {}
+    this.commentsLoading.set(false);
+  }
+
+  async submitComment() {
+    const lesson = this.activeLesson();
+    const text = this.newCommentText.trim();
+    if (!lesson || !text || this.submittingComment()) return;
+    this.submittingComment.set(true);
+    try {
+      const comment = await firstValueFrom(this.commentService.createComment(lesson.id, text));
+      this.comments.update(list => [comment, ...list]);
+      this.newCommentText = '';
+    } catch {}
+    this.submittingComment.set(false);
+  }
+
+  async deleteComment(commentId: string) {
+    const lesson = this.activeLesson();
+    if (!lesson) return;
+    try {
+      await firstValueFrom(this.commentService.deleteComment(lesson.id, commentId));
+      this.comments.update(list => list.filter(c => c.id !== commentId));
+    } catch {}
+  }
+
+  async reactComment(commentId: string, type: 'Like' | 'Dislike') {
+    const lesson = this.activeLesson();
+    if (!lesson) return;
+    try {
+      await firstValueFrom(this.commentService.toggleReaction(lesson.id, commentId, type));
+      void this.loadComments(lesson.id);
+    } catch {}
+  }
+
+  async loadSentenceAnalysis() {
+    const line = this.currentLine;
+    if (!line || this.analysisLoading()) return;
+    this.analysisLoading.set(true);
+    this.showAnalysis.set(false);
+    this.analysisData.set(null);
+    try {
+      const result = await this.analysisService.analyze(line.en);
+      this.analysisData.set(result);
+      this.showAnalysis.set(true);
+    } catch {
+      this.analysisData.set({
+        translation: line.vi || '(Không có bản dịch)',
+        grammar: 'Không thể kết nối AI lúc này. Vui lòng thử lại sau.',
+        examples: [],
+      });
+      this.showAnalysis.set(true);
+    }
+    this.analysisLoading.set(false);
+  }
 
   formatTime(s: number): string {
     const m = Math.floor(s / 60);

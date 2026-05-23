@@ -91,3 +91,12 @@ a { text-decoration: none; color: inherit; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #E7D9BF; border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: #D6C9A8; }
+
+/* YouTube IFrame API tạo iframe dynamically — không qua Angular ViewEncapsulation */
+#yt-player {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}
